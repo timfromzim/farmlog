@@ -1,0 +1,2255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#f5f0e8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>FarmLog</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f5f0e8; --bg2:#ede7d9; --bg3:#e2dace;
+  --surface:#ffffff; --border:#c8bfaa; --border2:#a89880;
+  --ink:#1a1a14; --ink2:#3d3928; --ink3:#6b6450; --ink4:#9a9180;
+  --green:#1f6e2e; --green2:#2d8f40; --green3:#e8f5ea; --green4:#c2e8c8;
+  --amber:#b85c00; --amber2:#e07010; --amber3:#fff3e0; --amber4:#ffd8a0;
+  --red:#b01c1c; --red2:#d42020; --red3:#fdeaea;
+  --blue:#1a4f8a; --blue2:#2060a8; --blue3:#e6f0fa;
+  --purple:#5a1f8a; --purple2:#7030b0; --purple3:#f0e6fa;
+  --radius:6px; --radius-lg:10px;
+  --shadow:0 2px 8px rgba(0,0,0,0.10); --shadow-lg:0 4px 20px rgba(0,0,0,0.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;font-family:'Barlow',sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.4;}
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* LOGIN */
+#screen-login{background:var(--green);justify-content:center;align-items:center;padding:32px 20px;}
+.login-card{background:white;border-radius:16px;padding:32px 24px;width:100%;max-width:400px;box-shadow:var(--shadow-lg);}
+.login-logo{text-align:center;margin-bottom:28px;}
+.login-logo-mark{width:60px;height:60px;background:var(--green);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 10px;}
+.login-logo h1{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:30px;color:var(--ink);letter-spacing:-0.5px;}
+.login-logo p{font-size:12px;color:var(--ink3);margin-top:2px;}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.role-card{border:2px solid var(--border);border-radius:var(--radius-lg);padding:16px 10px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.role-card.sel-sup{border-color:var(--green);background:var(--green3);}
+.role-card.sel-mgr{border-color:var(--blue);background:var(--blue3);}
+.role-icon{font-size:28px;margin-bottom:5px;}
+.role-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--ink);}
+.role-desc{font-size:11px;color:var(--ink3);margin-top:2px;}
+.login-error{background:var(--red3);border:1px solid #e0a0a0;border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:14px;display:none;}
+
+/* FORM ELEMENTS */
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--ink3);margin-bottom:5px;font-family:'Barlow Condensed',sans-serif;}
+.form-input,.form-select,.form-textarea{width:100%;border:2px solid var(--border);border-radius:var(--radius);padding:10px 13px;font-family:'Barlow',sans-serif;font-size:15px;color:var(--ink);background:white;outline:none;transition:border-color 0.15s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--green);}
+.form-select{cursor:pointer;}
+.form-textarea{resize:vertical;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:54px;background:var(--surface);border-bottom:2px solid var(--border);position:sticky;top:0;z-index:100;flex-shrink:0;}
+.topbar-logo{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:8px;}
+.role-pill{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:20px;}
+.role-pill.sup{background:var(--green3);color:var(--green);border:1px solid var(--green4);}
+.role-pill.mgr{background:var(--blue3);color:var(--blue);border:1px solid #bcd4f0;}
+.topbar-user{font-size:12px;color:var(--ink3);font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;}
+
+/* BOTTOM NAV */
+.bottom-nav{display:flex;background:var(--surface);border-top:2px solid var(--border);position:sticky;bottom:0;z-index:100;flex-shrink:0;}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:7px 4px 9px;cursor:pointer;border:none;background:none;transition:all 0.15s;gap:3px;border-top:3px solid transparent;position:relative;}
+.bnav-item:hover{background:var(--bg2);}
+.bnav-item.a-sup{border-top-color:var(--green);background:var(--green3);}
+.bnav-item.a-mgr{border-top-color:var(--blue);background:var(--blue3);}
+.bnav-icon{font-size:19px;line-height:1;}
+.bnav-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--ink3);}
+.bnav-item.a-sup .bnav-label{color:var(--green);}
+.bnav-item.a-mgr .bnav-label{color:var(--blue);}
+.badge{position:absolute;top:5px;right:calc(50% - 18px);min-width:17px;height:17px;background:var(--red2);color:white;border-radius:9px;font-size:10px;font-weight:700;font-family:'Barlow Condensed',sans-serif;display:flex;align-items:center;justify-content:center;padding:0 3px;}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:16px;max-width:740px;width:100%;margin:0 auto;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.page-header{margin-bottom:18px;}
+.page-title{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:var(--ink);letter-spacing:-0.3px;line-height:1;}
+.page-sub{font-size:12px;color:var(--ink3);margin-top:4px;font-family:'Barlow Semi Condensed',sans-serif;}
+
+/* CARDS */
+.card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:14px;box-shadow:var(--shadow);}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+
+/* WIZARD */
+.wizard-progress{display:flex;gap:5px;margin-bottom:18px;}
+.wdot{flex:1;height:5px;background:var(--bg3);border-radius:3px;transition:background 0.25s;}
+.wdot.done{background:var(--green2);}
+.wdot.active{background:var(--amber2);}
+.wizard-prompt{font-family:'Barlow Condensed',sans-serif;font-size:23px;font-weight:800;color:var(--ink);margin-bottom:4px;}
+.wizard-hint{font-size:12px;color:var(--ink3);margin-bottom:16px;font-family:'Barlow Semi Condensed',sans-serif;}
+.wizard-step{display:none;}
+.wizard-step.active{display:block;}
+
+/* CHIPS */
+.chip-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.chip{padding:9px 16px;border-radius:24px;border:2px solid var(--border);background:var(--bg2);color:var(--ink2);font-size:14px;font-weight:600;font-family:'Barlow Semi Condensed',sans-serif;cursor:pointer;transition:all 0.12s;user-select:none;}
+.chip:hover{border-color:var(--green);background:var(--green3);}
+.chip.selected{background:var(--green);border-color:var(--green);color:white;}
+
+/* PAY TYPE */
+.paytype-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.paytype-card{border:2px solid var(--border);border-radius:var(--radius-lg);padding:16px 12px;text-align:center;cursor:pointer;transition:all 0.12s;background:var(--bg2);}
+.paytype-card.selected{border-color:var(--amber2);background:var(--amber3);}
+.paytype-icon{font-size:28px;margin-bottom:6px;}
+.paytype-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--ink);}
+.paytype-desc{font-size:11px;color:var(--ink3);margin-top:3px;}
+
+/* BUTTONS */
+.btn{padding:11px 20px;border-radius:var(--radius);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:0.5px;cursor:pointer;border:2px solid transparent;transition:all 0.12s;display:inline-flex;align-items:center;justify-content:center;gap:7px;text-transform:uppercase;}
+.btn-green{background:var(--green);color:white;border-color:var(--green);}
+.btn-green:hover{background:var(--green2);}
+.btn-amber{background:var(--amber2);color:white;border-color:var(--amber2);}
+.btn-amber:hover{background:var(--amber);}
+.btn-blue{background:var(--blue);color:white;border-color:var(--blue);}
+.btn-blue:hover{background:var(--blue2);}
+.btn-outline{background:transparent;color:var(--ink2);border-color:var(--border2);}
+.btn-outline:hover{border-color:var(--ink2);}
+.btn-danger{background:transparent;color:var(--red);border-color:#e0a0a0;}
+.btn-danger:hover{background:var(--red3);}
+.btn-purple{background:var(--purple);color:white;border-color:var(--purple);}
+.btn-sm{padding:6px 13px;font-size:12px;}
+.btn-block{width:100%;}
+.btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* VOICE */
+.voice-section{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 0 10px;}
+.voice-btn{width:78px;height:78px;border-radius:50%;background:var(--green);border:3px solid var(--green2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:30px;transition:all 0.15s;box-shadow:var(--shadow);user-select:none;-webkit-user-select:none;touch-action:none;}
+.voice-btn.listening{background:var(--red2);border-color:var(--red);animation:vpulse 1s ease-in-out infinite;}
+@keyframes vpulse{0%,100%{box-shadow:0 0 0 0 rgba(180,30,30,0.4);}50%{box-shadow:0 0 0 14px rgba(180,30,30,0);}}
+.voice-instruction{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--ink3);text-align:center;text-transform:uppercase;letter-spacing:0.5px;}
+.voice-feedback{font-size:13px;color:var(--amber);font-weight:600;text-align:center;min-height:18px;font-family:'Barlow Semi Condensed',sans-serif;}
+
+/* LOG ENTRIES */
+.log-entry{background:var(--surface);border:2px solid var(--border);border-left:5px solid var(--green2);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;}
+.log-entry.pending{border-left-color:var(--amber2);}
+.log-entry.approved{border-left-color:var(--green2);}
+.log-entry.rejected{border-left-color:var(--red2);}
+.log-crop{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;color:var(--ink);margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.log-cost{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;color:var(--green);white-space:nowrap;}
+.log-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:5px;}
+.log-tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--bg2);color:var(--ink2);font-family:'Barlow Semi Condensed',sans-serif;}
+.log-status{font-size:11px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;text-transform:uppercase;}
+.s-pending{color:var(--amber);}
+.s-approved{color:var(--green);}
+.s-rejected{color:var(--red);}
+
+/* STATS */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.stat-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius-lg);padding:14px;}
+.stat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--ink3);margin-bottom:5px;font-family:'Barlow Condensed',sans-serif;}
+.stat-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:var(--green);line-height:1;}
+.stat-val.amber{color:var(--amber2);}
+.stat-val.blue{color:var(--blue2);}
+.stat-detail{font-size:11px;color:var(--ink4);margin-top:3px;}
+
+/* BARS */
+.bar-wrap{margin-bottom:12px;}
+.bar-label-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+.bar-name{font-family:'Barlow Semi Condensed',sans-serif;font-size:14px;font-weight:600;color:var(--ink);}
+.bar-val{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--green);}
+.bar-track{height:10px;background:var(--bg3);border-radius:5px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:5px;background:var(--green2);transition:width 0.7s cubic-bezier(0.22,1,0.36,1);}
+
+/* APPROVAL */
+.approval-card{background:var(--surface);border:2px solid var(--amber4);border-radius:var(--radius-lg);padding:14px;margin-bottom:10px;}
+.approval-actions{display:flex;gap:8px;margin-top:10px;}
+
+/* SETTINGS */
+.settings-section{margin-bottom:26px;}
+.settings-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border);}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bg3);gap:12px;}
+.settings-row-label{font-size:14px;font-weight:600;color:var(--ink);}
+.settings-row-sub{font-size:11px;color:var(--ink3);margin-top:1px;}
+
+/* TAGS */
+.tag-list{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;}
+.tag{display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--bg2);border:2px solid var(--border);border-radius:20px;font-size:13px;font-weight:600;color:var(--ink2);}
+.tag-x{cursor:pointer;color:var(--ink4);font-size:15px;font-weight:400;line-height:1;}
+.tag-x:hover{color:var(--red);}
+
+/* PIECE RATE TABLE */
+.pr-table{width:100%;border-collapse:collapse;font-size:13px;}
+.pr-table th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--ink3);padding:6px 8px;text-align:left;border-bottom:2px solid var(--border);}
+.pr-table td{padding:9px 8px;border-bottom:1px solid var(--bg3);vertical-align:middle;}
+.pr-history-row{background:var(--bg2);}
+.pr-history-row td{padding:5px 8px;font-size:11px;color:var(--ink3);}
+
+/* RATE MISMATCH BANNER */
+.rate-mismatch{background:var(--amber3);border:2px solid var(--amber4);border-radius:var(--radius-lg);padding:14px;margin-bottom:14px;}
+.rate-mismatch-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--amber);margin-bottom:10px;}
+.rate-option{display:flex;align-items:center;gap:10px;padding:9px 12px;background:white;border:2px solid var(--border);border-radius:var(--radius);margin-bottom:7px;cursor:pointer;transition:all 0.12s;}
+.rate-option:hover{border-color:var(--amber2);}
+.rate-option.selected{border-color:var(--amber2);background:var(--amber3);}
+.rate-option-label{font-size:13px;font-weight:600;color:var(--ink);}
+.rate-option-detail{font-size:11px;color:var(--ink3);margin-top:2px;}
+
+/* MODALS */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:14px 14px 0 0;padding:22px 18px 30px;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;animation:slide-up 0.22s ease;border-top:3px solid var(--green);}
+.modal.amber-top{border-top-color:var(--amber2);}
+.modal.red-top{border-top-color:var(--red2);}
+@keyframes slide-up{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--ink);margin-bottom:18px;}
+.modal-actions{display:flex;gap:10px;margin-top:20px;}
+
+/* CONFIRM BOX */
+.confirm-box{background:var(--green3);border:2px solid var(--green4);border-radius:var(--radius-lg);padding:14px;margin-bottom:14px;}
+.confirm-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.ci-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--ink3);margin-bottom:2px;font-family:'Barlow Condensed',sans-serif;}
+.ci-val{font-size:15px;font-weight:700;color:var(--ink);font-family:'Barlow Semi Condensed',sans-serif;}
+.confirm-cost{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--green);}
+
+/* BACKDATE */
+.backdate-banner{background:var(--amber3);border:2px solid var(--amber4);border-radius:var(--radius);padding:8px 14px;font-size:13px;font-weight:600;color:var(--amber);display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+
+/* PRO LOCK */
+.pro-lock{background:var(--purple3);border:2px solid #c8a8e8;border-radius:var(--radius-lg);padding:20px;text-align:center;margin-bottom:16px;}
+.pro-lock-icon{font-size:32px;margin-bottom:8px;}
+.pro-lock-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--purple);margin-bottom:6px;}
+.pro-lock-sub{font-size:13px;color:var(--ink3);margin-bottom:14px;}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
+.filter-bar .form-select,.filter-bar .form-input{flex:1;min-width:110px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:white;padding:10px 22px;border-radius:24px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:0.3px;z-index:500;opacity:0;transition:all 0.25s cubic-bezier(0.22,1,0.36,1);pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.green{background:var(--green);}
+.toast.red{background:var(--red2);}
+.toast.amber{background:var(--amber);}
+
+/* MISC */
+.pro{display:inline-block;background:var(--purple2);color:white;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:4px;}
+.divider{height:1px;background:var(--border);margin:14px 0;}
+.empty{text-align:center;padding:36px 20px;color:var(--ink3);}
+.empty-icon{font-size:36px;margin-bottom:8px;}
+.empty-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--ink2);}
+.empty-sub{font-size:12px;margin-top:4px;}
+.flex{display:flex;} .gap8{gap:8px;} .flex1{flex:1;} .mt8{margin-top:8px;} .mt12{margin-top:12px;} .mb0{margin-bottom:0!important;}
+.text-muted{font-size:12px;color:var(--ink3);}
+.text-green{color:var(--green);} .text-amber{color:var(--amber2);} .text-red{color:var(--red);}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
+input[type=number]{-moz-appearance:textfield;}
+@media(max-width:480px){.form-row{grid-template-columns:1fr;}.form-row-3{grid-template-columns:1fr 1fr;}.confirm-grid{grid-template-columns:1fr 1fr;}}
+
+/* PRINT */
+@media print{
+  .topbar,.bottom-nav,.btn,.filter-bar,.no-print{display:none!important;}
+  .content{padding:0;max-width:100%;}
+  .card{box-shadow:none;border:1px solid #ccc;break-inside:avoid;}
+  body{background:white;}
+}
+
+/* RATE HISTORY TABLE */
+.rate-history{margin-top:8px;background:var(--bg2);border-radius:var(--radius);padding:8px 10px;}
+.rate-history-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--ink3);margin-bottom:6px;}
+.rate-history-row{display:grid;grid-template-columns:1fr 80px 80px 100px;gap:6px;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border);}
+.rate-history-row:last-child{border-bottom:none;}
+
+/* WEEK OVERRIDE INDICATOR */
+.override-badge{display:inline-block;background:var(--amber3);border:1px solid var(--amber4);color:var(--amber);font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;}
+
+/* GPS AREA RECORDER */
+#gps-overlay{display:none;position:fixed;inset:0;background:var(--bg);z-index:300;flex-direction:column;}
+#gps-overlay.open{display:flex;}
+.gps-topbar{display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:54px;background:var(--surface);border-bottom:2px solid var(--border);flex-shrink:0;}
+.gps-topbar-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--ink);}
+.gps-body{flex:1;display:flex;flex-direction:column;padding:16px;gap:14px;overflow-y:auto;}
+.gps-status-bar{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius-lg);padding:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.gps-accuracy{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--ink3);}
+.gps-accuracy.good{color:var(--green);}
+.gps-accuracy.poor{color:var(--red);}
+.gps-map-placeholder{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius-lg);flex:1;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.gps-map-canvas{width:100%;height:100%;position:absolute;inset:0;}
+.gps-patches{display:flex;flex-direction:column;gap:8px;}
+.gps-patch-row{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.gps-patch-label{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--ink);}
+.gps-patch-area{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--green);}
+.gps-total-bar{background:var(--green3);border:2px solid var(--green4);border-radius:var(--radius-lg);padding:14px;display:flex;align-items:center;justify-content:space-between;}
+.gps-total-label{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.5px;}
+.gps-total-val{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--green);}
+.gps-btn-record{width:86px;height:86px;border-radius:50%;background:var(--green);border:4px solid var(--green2);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.5px;color:white;text-transform:uppercase;gap:4px;transition:all 0.15s;box-shadow:var(--shadow);user-select:none;}
+.gps-btn-record.recording{background:var(--red2);border-color:var(--red);animation:vpulse 1.2s ease-in-out infinite;}
+.gps-btn-record .gps-btn-icon{font-size:26px;line-height:1;}
+.gps-controls{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.gps-point-count{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--ink3);}
+.gps-instruction{font-size:12px;color:var(--ink3);text-align:center;max-width:260px;line-height:1.5;}
+.gps-area-badge{display:inline-block;background:var(--green3);border:2px solid var(--green4);border-radius:var(--radius);padding:4px 12px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--green);cursor:pointer;margin-left:8px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ============================= LOGIN ============================= -->
+<div id="screen-login" class="screen active">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-mark">🌿</div>
+      <h1>FarmLog</h1>
+      <p>Field labour cost tracking</p>
+    </div>
+    <div id="loginError" class="login-error"></div>
+    <div class="form-group">
+      <label class="form-label">Select your role</label>
+      <div class="role-grid">
+        <div class="role-card" id="role-sup" onclick="selectRole('supervisor')">
+          <div class="role-icon">👷</div>
+          <div class="role-name">Field Supervisor</div>
+          <div class="role-desc">Log tasks in the field</div>
+        </div>
+        <div class="role-card" id="role-mgr" onclick="selectRole('manager')">
+          <div class="role-icon">📊</div>
+          <div class="role-name">Farm Manager</div>
+          <div class="role-desc">Approve, review &amp; report</div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <input type="text" class="form-input" id="loginUser" placeholder="Enter your username" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input type="password" class="form-input" id="loginPass" placeholder="Enter your password" autocomplete="current-password">
+    </div>
+    <button class="btn btn-green btn-block" onclick="doLogin()" id="loginBtn">Enter FarmLog</button>
+    <div style="text-align:center;margin-top:14px;">
+      <span class="text-muted" style="cursor:pointer;text-decoration:underline;" onclick="openModal('modal-addfarm-login')">+ Add new farm (first-time setup)</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= MAIN APP ============================= -->
+<div id="screen-app" class="screen">
+  <div class="topbar">
+    <div class="topbar-logo">🌿 FarmLog</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="role-pill" id="rolePill">SUP</span>
+      <span id="topbarDate" style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--ink3);letter-spacing:0.3px;"></span>
+    </div>
+    <div class="topbar-user" onclick="doLogout()"><span id="topbarUser"></span> ↩</div>
+  </div>
+  <div class="content" id="mainContent">
+
+    <!-- ============ SUPERVISOR: LOG TASK ============ -->
+    <div class="tab-panel" id="panel-log">
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+        <div>
+          <div class="page-title">Log Task</div>
+          <div class="page-sub" id="logFarmLabel"></div>
+          <div style="margin-top:6px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--green);" id="logTodayDate"></div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="white-space:nowrap;margin-top:4px;" onclick="openModal('modal-requestcrop')">+ Request Crop</button>
+      </div>
+      <div id="backdateBanner" class="backdate-banner" style="display:none;">
+        📅 Logging for: <strong id="backdateLabel"></strong>
+        <span style="margin-left:auto;cursor:pointer;font-size:18px;" onclick="clearBackdate()">×</span>
+      </div>
+      <div class="card mb0">
+        <div class="wizard-progress" id="wizProg"></div>
+        <div id="wizBreadcrumb" style="font-family:'Barlow Semi Condensed',sans-serif;font-size:13px;font-weight:600;min-height:18px;margin-bottom:12px;"></div>
+        <!-- Step 1: Crop -->
+        <div class="wizard-step" id="ws1">
+          <div class="wizard-prompt">Which crop?</div>
+          <div class="wizard-hint">Select from the list</div>
+          <div class="chip-grid" id="cropChips"></div>
+        </div>
+        <!-- Step 2: Operation -->
+        <div class="wizard-step" id="ws2">
+          <div class="wizard-prompt">What operation?</div>
+          <div class="wizard-hint">Choose what the workers were doing</div>
+          <div class="chip-grid" id="opChips"></div>
+        </div>
+        <!-- Step 3: Section -->
+        <div class="wizard-step" id="ws3">
+          <div class="wizard-prompt">Which section?</div>
+          <div class="wizard-hint">Select the block or field area</div>
+          <div class="chip-grid" id="sectionChips"></div>
+          <div class="flex gap8">
+            <input type="text" class="form-input flex1" id="quickSecInput" placeholder="New section name...">
+            <button class="btn btn-outline btn-sm" onclick="addQuickSection()">+ Add</button>
+          </div>
+        </div>
+        <!-- Step 4: Pay type -->
+        <div class="wizard-step" id="ws4">
+          <div class="wizard-prompt">Pay type?</div>
+          <div class="wizard-hint">How is this task paid?</div>
+          <div class="paytype-grid">
+            <div class="paytype-card" id="pt-time" onclick="selectPayType('time')">
+              <div class="paytype-icon">⏱</div>
+              <div class="paytype-name">Time Rate</div>
+              <div class="paytype-desc">Workers × hours</div>
+            </div>
+            <div class="paytype-card" id="pt-piece" onclick="selectPayType('piece')">
+              <div class="paytype-icon">⚖</div>
+              <div class="paytype-name">Piece Rate</div>
+              <div class="paytype-desc">Output × rate</div>
+            </div>
+          </div>
+        </div>
+        <!-- Step 5a: Time -->
+        <div class="wizard-step" id="ws5a">
+          <div class="wizard-prompt">Workers and hours</div>
+          <div class="wizard-hint">Enter group totals</div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Workers</label><input type="number" class="form-input" id="workerCount" placeholder="e.g. 8" min="1"></div>
+            <div class="form-group"><label class="form-label">Hours</label><input type="number" class="form-input" id="hoursWorked" placeholder="e.g. 6" min="0.5" step="0.5"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Area covered — ha (optional)</label>
+            <div class="flex gap8" style="align-items:center;">
+              <input type="number" class="form-input flex1" id="areaCovered" placeholder="e.g. 2.50" min="0" step="0.01">
+              <button class="btn btn-outline btn-sm" style="white-space:nowrap;flex:none;" onclick="openGpsRecorder()">&#128205; Measure area</button>
+            </div>
+            <div id="gpsAreaNote" style="display:none;margin-top:6px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--green);"></div>
+          </div>
+        </div>
+        <!-- Step 5b: Piece -->
+        <div class="wizard-step" id="ws5b">
+          <div class="wizard-prompt">Output and workers</div>
+          <div class="wizard-hint">Group total — wet kg where applicable</div>
+          <div id="pieceRateDisplay" style="margin-bottom:12px;"></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Workers</label><input type="number" class="form-input" id="pieceWorkers" placeholder="e.g. 12" min="1"></div>
+            <div class="form-group"><label class="form-label">Total output</label><input type="number" class="form-input" id="pieceOutput" placeholder="e.g. 340" min="0" step="0.1"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Unit</label>
+              <select class="form-select" id="pieceUnit"><option>wet kg</option><option>kg</option><option>tonnes</option><option>bags</option><option>crates</option><option>bundles</option><option>units</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Override rate (US$) — optional</label>
+              <input type="number" class="form-input" id="pieceOverrideRate" placeholder="Leave blank for standard" step="0.001" min="0">
+            </div>
+          </div>
+          <div id="pieceOverrideNote" class="text-muted mt8"></div>
+        </div>
+        <!-- Step 6: Confirm -->
+        <div class="wizard-step" id="ws6">
+          <div class="wizard-prompt">Confirm &amp; submit</div>
+          <div class="wizard-hint">Review before sending for approval</div>
+          <div id="confirmBox"></div>
+          <div class="form-group"><label class="form-label">Notes (optional)</label><textarea class="form-textarea" id="taskNotes" rows="2" placeholder="e.g. aphid pressure, stopped early due to rain..."></textarea></div>
+        </div>
+        <!-- Voice + nav -->
+        <div class="voice-section" id="voiceSection">
+          <button class="voice-btn" id="voiceBtn" onmousedown="startVoice(event)" onmouseup="stopVoice(event)" ontouchstart="startVoice(event)" ontouchend="stopVoice(event)">🎤</button>
+          <div class="voice-instruction" id="voiceInstruction">Hold to speak</div>
+          <div class="voice-feedback" id="voiceFeedback"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+          <button class="btn btn-outline" id="btnBack" onclick="wizardBack()">← Back</button>
+          <button class="btn btn-amber" id="btnNext" onclick="wizardNext()">Next →</button>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:14px;">
+        <span class="text-muted" style="cursor:pointer;text-decoration:underline;" onclick="openModal('modal-backdate')">📅 Log for a different date</span>
+      </div>
+    </div>
+
+    <!-- ============ SUPERVISOR: MY LOG ============ -->
+    <div class="tab-panel" id="panel-mylog">
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div><div class="page-title">My Log</div><div class="page-sub" id="mylogSub"></div></div>
+        <button class="btn btn-outline btn-sm no-print" onclick="doSync()">↑ Sync</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;" class="no-print">
+        <input type="date" class="form-input" id="mylogDate" onchange="renderMyLog()" style="max-width:160px;">
+        <select class="form-select" id="mylogCropF" onchange="renderMyLog()" style="max-width:160px;"><option value="">All crops</option></select>
+        <button class="btn btn-outline btn-sm" onclick="clearMyLogFilters()">✕ Clear</button>
+      </div>
+      <div id="mylogList"></div>
+    </div>
+
+    <!-- ============ MANAGER: APPROVAL QUEUE ============ -->
+    <div class="tab-panel" id="panel-approve">
+      <div class="page-header">
+        <div class="page-title">Approval Queue</div>
+        <div class="page-sub" id="approveSub"></div>
+      </div>
+      <div id="approvalList"></div>
+    </div>
+
+    <!-- ============ MANAGER: ALL LOGS ============ -->
+    <div class="tab-panel" id="panel-alllogs">
+      <div class="page-header"><div class="page-title">All Logs</div><div class="page-sub">Approved entries — full history</div></div>
+      <div class="card" style="padding:14px;" id="alllogsFilterCard">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--ink3);margin-bottom:8px;">Date range</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+          <div><div style="font-size:10px;color:var(--ink4);margin-bottom:3px;">From</div><input type="date" class="form-input" id="alFrom"></div>
+          <div><div style="font-size:10px;color:var(--ink4);margin-bottom:3px;">To</div><input type="date" class="form-input" id="alTo"></div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--ink3);margin-bottom:8px;">Filter by</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+          <div><div style="font-size:10px;color:var(--ink4);margin-bottom:3px;">Crop</div><select class="form-select" id="alCrop"><option value="">All crops</option></select></div>
+          <div><div style="font-size:10px;color:var(--ink4);margin-bottom:3px;">Operation</div><select class="form-select" id="alOp"><option value="">All ops</option></select></div>
+          <div><div style="font-size:10px;color:var(--ink4);margin-bottom:3px;">Supervisor</div><select class="form-select" id="alSup"><option value="">All supervisors</option></select></div>
+          <div><div style="font-size:10px;color:var(--ink4);margin-bottom:3px;">Section</div><select class="form-select" id="alSection"><option value="">All sections</option></select></div>
+          <div><div style="font-size:10px;color:var(--ink4);margin-bottom:3px;">Farm</div><select class="form-select" id="alFarm"><option value="">All farms</option></select></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-green btn-sm flex1" onclick="renderAllLogs()">Apply Filters</button>
+          <button class="btn btn-outline btn-sm" onclick="clearAllLogsFilters()">✕ Clear</button>
+        </div>
+      </div>
+      <div id="alllogsList"></div>
+      <div style="text-align:right;margin-top:8px;" class="no-print">
+        <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn btn-outline btn-sm" onclick="exportExcel()">⬇ Export Excel <span class="pro">PRO</span></button>
+      </div>
+    </div>
+
+    <!-- ============ MANAGER: DASHBOARD ============ -->
+    <div class="tab-panel" id="panel-dashboard">
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div><div class="page-title">Dashboard</div><div class="page-sub" id="dashPeriodLabel"></div></div>
+        <div class="flex gap8 no-print" style="flex-wrap:wrap;align-items:center;">
+          <select class="form-select" id="dashPeriod" style="width:130px;" onchange="renderDashboard()">
+            <option value="month">This month</option>
+            <option value="week">This week</option>
+            <option value="all">All time</option>
+          </select>
+          <select class="form-select" id="dashFarm" style="width:150px;" onchange="renderDashboard()"><option value="all">All farms</option></select>
+          <select class="form-select" id="dashCrop" style="width:140px;" onchange="renderDashboard()"><option value="all">All crops</option></select>
+          <select class="form-select" id="dashOp" style="width:160px;" onchange="renderDashboard()"><option value="all">All operations</option></select>
+          <select class="form-select" id="dashSup" style="width:150px;" onchange="renderDashboard()"><option value="all">All supervisors</option></select>
+          <button class="btn btn-outline btn-sm" onclick="clearDashFilters()">✕ Clear</button>
+        </div>
+      </div>
+      <div style="text-align:right;margin-bottom:10px;" class="no-print">
+        <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 Print / Save PDF</button>
+      </div>
+      <div class="stat-grid" id="dashStats"></div>
+      <div class="card"><div class="card-title">Labour Cost by Crop</div><div id="cropBars"></div></div>
+      <div class="card"><div class="card-title">Operations Breakdown</div><div id="opBreakdown"></div></div>
+      <div class="card"><div class="card-title">By Section / Block</div><div id="sectionBreakdown"></div></div>
+      <div class="card"><div class="card-title">By Supervisor</div><div id="supBreakdown"></div></div>
+    </div>
+
+    <!-- ============ MANAGER: SETTINGS ============ -->
+    <div class="tab-panel" id="panel-settings">
+      <div class="page-header"><div class="page-title">Settings</div><div class="page-sub" id="settingsFarmLabel"></div></div>
+
+      <div class="settings-section">
+        <div class="settings-title">Farms &amp; Locations</div>
+        <div id="farmList"></div>
+        <button class="btn btn-outline btn-sm mt8" onclick="openModal('modal-addfarm')">+ Add Farm</button>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">Supervisors &amp; Users</div>
+        <div id="supList"></div>
+        <button class="btn btn-outline btn-sm mt8" onclick="openModal('modal-addsup')">+ Add Supervisor</button>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">Manager Accounts</div>
+        <div id="mgrList"></div>
+        <button class="btn btn-outline btn-sm mt8" onclick="openModal('modal-addmgr')">+ Add Manager</button>
+      </div>
+
+      <div class="settings-section" id="cropRequestSection" style="display:none;">
+        <div class="settings-title">Crop Requests from Supervisors <span id="cropReqBadge"></span></div>
+        <div id="cropRequestList"></div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">Crops</div>
+        <div class="tag-list" id="cropTagList"></div>
+        <div class="flex gap8">
+          <input type="text" class="form-input flex1" id="newCropInput" placeholder="Add crop...">
+          <button class="btn btn-outline btn-sm" onclick="addCrop()">+ Add</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">Operations</div>
+        <div class="tag-list" id="opTagList"></div>
+        <div class="flex gap8">
+          <input type="text" class="form-input flex1" id="newOpInput" placeholder="Add operation...">
+          <button class="btn btn-outline btn-sm" onclick="addOp()">+ Add</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">Labour Rates</div>
+        <div class="card">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Standard daily rate</label>
+              <div class="flex gap8" style="align-items:center;">
+                <input type="number" class="form-input" id="dailyRate" placeholder="4.00" step="0.50" min="0">
+                <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--ink3);white-space:nowrap;">US$</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Working hours / day</label>
+              <div class="flex gap8" style="align-items:center;">
+                <input type="number" class="form-input" id="hoursPerDay" placeholder="8" step="0.5" min="1">
+                <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--ink3);white-space:nowrap;">hrs</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- PRO: Labour grades -->
+        <div class="pro-lock">
+          <div class="pro-lock-icon">🏷</div>
+          <div class="pro-lock-title">Labour Grade Rates <span class="pro">PRO</span></div>
+          <div class="pro-lock-sub">Set different daily or hourly rates for Grade A, Grade B, casual and contract workers. When logging a task, select how many of each grade are doing the job.</div>
+          <button class="btn btn-purple btn-sm" onclick="toast('Pro upgrade coming soon — contact FarmLog to enquire','amber')">Upgrade to Pro</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">Piece Rates</div>
+        <div class="text-muted" style="margin-bottom:12px;">Rates are per crop and operation. Each change is recorded with the date so the full rate history is preserved. Set a temporary week override without losing the standard rate.</div>
+        <div id="pieceRateTable"></div>
+        <button class="btn btn-outline btn-sm mt8" onclick="openModal('modal-addpr')">+ Add Piece Rate</button>
+      </div>
+
+      <button class="btn btn-green btn-block" onclick="saveSettings()">Save Settings</button>
+      <div style="height:16px;"></div>
+    </div>
+
+  </div>
+  <div class="bottom-nav" id="bottomNav"></div>
+</div>
+
+<!-- ============================= MODALS ============================= -->
+
+<!-- Add farm (login) -->
+<div class="modal-overlay" id="modal-addfarm-login">
+  <div class="modal">
+    <div class="modal-title">First-Time Farm Setup</div>
+    <div class="form-group"><label class="form-label">Farm name</label><input type="text" class="form-input" id="lf-name" placeholder="e.g. Mushumbi Pools Farm"></div>
+    <div class="form-group"><label class="form-label">Region (optional)</label><input type="text" class="form-input" id="lf-region" placeholder="e.g. Mashonaland West"></div>
+    <div class="form-group"><label class="form-label">Sections / blocks (comma separated)</label><input type="text" class="form-input" id="lf-sections" placeholder="e.g. A1, A2, B1, North Block"></div>
+    <div class="form-group"><label class="form-label">Manager username</label><input type="text" class="form-input" id="lf-mgr-user" placeholder="e.g. manager1"></div>
+    <div class="form-group"><label class="form-label">Manager password</label><input type="password" class="form-input" id="lf-mgr-pass" placeholder="Set a password"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline flex1" onclick="closeModal('modal-addfarm-login')">Cancel</button>
+      <button class="btn btn-green flex1" onclick="setupFirstFarm()">Create Farm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add farm (settings) -->
+<div class="modal-overlay" id="modal-addfarm">
+  <div class="modal">
+    <div class="modal-title">Add Farm / Location</div>
+    <div class="form-group"><label class="form-label">Farm name</label><input type="text" class="form-input" id="af-name" placeholder="e.g. La Rochelle Farm"></div>
+    <div class="form-group"><label class="form-label">Region (optional)</label><input type="text" class="form-input" id="af-region" placeholder=""></div>
+    <div class="form-group"><label class="form-label">Sections / blocks (comma separated)</label><input type="text" class="form-input" id="af-sections" placeholder="e.g. A1, A2, B1"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline flex1" onclick="closeModal('modal-addfarm')">Cancel</button>
+      <button class="btn btn-green flex1" onclick="saveFarm()">Add Farm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add supervisor -->
+<div class="modal-overlay" id="modal-addsup">
+  <div class="modal">
+    <div class="modal-title">Add Supervisor</div>
+    <div class="form-group"><label class="form-label">Full name</label><input type="text" class="form-input" id="as-name" placeholder="e.g. Moses Chikwanda"></div>
+    <div class="form-group"><label class="form-label">Username (for login)</label><input type="text" class="form-input" id="as-user" placeholder="e.g. moses.c"></div>
+    <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="as-pass" placeholder="Set a password"></div>
+    <div class="form-group"><label class="form-label">Assigned farm</label><select class="form-select" id="as-farm"></select></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline flex1" onclick="closeModal('modal-addsup')">Cancel</button>
+      <button class="btn btn-green flex1" onclick="saveSupervisor()">Add Supervisor</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add manager -->
+<div class="modal-overlay" id="modal-addmgr">
+  <div class="modal">
+    <div class="modal-title">Add Manager Account</div>
+    <div class="form-group"><label class="form-label">Full name</label><input type="text" class="form-input" id="am-name" placeholder="e.g. Tim Ashton"></div>
+    <div class="form-group"><label class="form-label">Username</label><input type="text" class="form-input" id="am-user" placeholder="e.g. tim.a"></div>
+    <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="am-pass" placeholder="Set a password"></div>
+    <div class="form-group"><label class="form-label">Assigned farm</label><select class="form-select" id="am-farm"></select></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline flex1" onclick="closeModal('modal-addmgr')">Cancel</button>
+      <button class="btn btn-blue flex1" onclick="saveManager()">Add Manager</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add piece rate -->
+<div class="modal-overlay" id="modal-addpr">
+  <div class="modal">
+    <div class="modal-title">Add / Update Piece Rate</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Crop</label><select class="form-select" id="pr-crop"></select></div>
+      <div class="form-group"><label class="form-label">Operation</label><select class="form-select" id="pr-op"></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Standard rate (US$)</label><input type="number" class="form-input" id="pr-rate" placeholder="0.080" step="0.001" min="0"></div>
+      <div class="form-group"><label class="form-label">Per unit</label><select class="form-select" id="pr-unit"><option>wet kg</option><option>kg</option><option>tonne</option><option>bag</option><option>crate</option><option>bundle</option><option>unit</option></select></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Week override rate (US$) — leave blank for none</label>
+      <input type="number" class="form-input" id="pr-weekrate" placeholder="Temporary rate override" step="0.001" min="0">
+    </div>
+    <div class="text-muted">Changing the standard rate records the previous rate in history with today as its end date. The week override does not affect rate history.</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline flex1" onclick="closeModal('modal-addpr')">Cancel</button>
+      <button class="btn btn-green flex1" onclick="savePieceRate()">Save Rate</button>
+    </div>
+  </div>
+</div>
+
+<!-- Backdate -->
+<div class="modal-overlay" id="modal-backdate">
+  <div class="modal amber-top">
+    <div class="modal-title">Log for a Different Date</div>
+    <div class="form-group"><label class="form-label">Select date</label><input type="date" class="form-input" id="backdateInput"></div>
+    <div class="text-muted">Backdated entries are flagged and require manager approval.</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline flex1" onclick="closeModal('modal-backdate')">Cancel</button>
+      <button class="btn btn-amber flex1" onclick="applyBackdate()">Set Date</button>
+    </div>
+  </div>
+</div>
+
+<!-- Approve detail + rate mismatch -->
+<div class="modal-overlay" id="modal-approve-detail">
+  <div class="modal amber-top">
+    <div class="modal-title">Review Entry</div>
+    <div id="approveDetailContent"></div>
+    <div id="rateMismatchSection"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger flex1" onclick="rejectFromDetail()">✕ Reject</button>
+      <button class="btn btn-green flex1" onclick="approveFromDetail()">✓ Approve</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject with reason -->
+<div class="modal-overlay" id="modal-reject">
+  <div class="modal red-top">
+    <div class="modal-title">Reject Entry</div>
+    <div id="rejectEntryPreview" style="margin-bottom:14px;"></div>
+    <div class="form-group"><label class="form-label">Reason for rejection (shown to supervisor)</label><textarea class="form-textarea" id="rejectReason" rows="3" placeholder="e.g. Wrong section selected — please resubmit for North Block"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline flex1" onclick="closeModal('modal-reject')">Cancel</button>
+      <button class="btn btn-danger flex1" onclick="confirmReject()">Confirm Rejection</button>
+    </div>
+  </div>
+</div>
+
+<!-- Excel Pro prompt -->
+<div class="modal-overlay" id="modal-pro-excel">
+  <div class="modal">
+    <div style="text-align:center;padding:10px 0;">
+      <div style="font-size:40px;margin-bottom:10px;">📊</div>
+      <div class="modal-title" style="text-align:center;">Excel Export — Pro Feature</div>
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:20px;">Formatted Excel files with correct US$ currency formatting, one sheet per crop, and monthly management report layout are available in FarmLog Pro.</p>
+      <button class="btn btn-purple btn-block" onclick="toast('Contact FarmLog to upgrade — coming soon','amber');closeModal('modal-pro-excel');">Enquire About Pro</button>
+    </div>
+    <div class="modal-actions"><button class="btn btn-outline btn-block" onclick="closeModal('modal-pro-excel')">Close</button></div>
+  </div>
+</div>
+
+<!-- Request crop (supervisor) -->
+<div class="modal-overlay" id="modal-requestcrop">
+  <div class="modal">
+    <div class="modal-title">Request a New Crop</div>
+    <div class="form-group"><label class="form-label">Crop name</label><input type="text" class="form-input" id="reqCropName" placeholder="e.g. Sweet Pepper"></div>
+    <div class="form-group"><label class="form-label">Reason / notes for manager</label><textarea class="form-textarea" id="reqCropNote" rows="2" placeholder="e.g. New plot being planted this season"></textarea></div>
+    <div class="text-muted">Your request will be flagged for the manager to add in Settings.</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline flex1" onclick="closeModal('modal-requestcrop')">Cancel</button>
+      <button class="btn btn-green flex1" onclick="submitCropRequest()">Send Request</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+</div>
+
+<!-- ============================= GPS AREA RECORDER ============================= -->
+<div id="gps-overlay">
+  <div class="gps-topbar">
+    <div class="gps-topbar-title">&#128205; Measure Area</div>
+    <button class="btn btn-outline btn-sm" onclick="closeGpsRecorder()">&#x2715; Close</button>
+  </div>
+  <div class="gps-body">
+    <div class="gps-status-bar">
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--ink3);margin-bottom:2px;">GPS Signal</div>
+        <div class="gps-accuracy" id="gpsAccuracy">Waiting for GPS...</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--ink3);margin-bottom:2px;">Points logged</div>
+        <div class="gps-point-count" id="gpsPointCount">0 points</div>
+      </div>
+    </div>
+
+    <!-- Live sketch map -->
+    <div class="gps-map-placeholder" id="gpsMapBox" style="min-height:220px;">
+      <canvas class="gps-map-canvas" id="gpsCanvas"></canvas>
+      <div id="gpsMapEmpty" style="z-index:1;text-align:center;color:var(--ink3);font-size:13px;padding:20px;">
+        <div style="font-size:32px;margin-bottom:8px;">&#127757;</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;">Track will appear here<br>as you walk the boundary</div>
+      </div>
+    </div>
+
+    <!-- Recording controls -->
+    <div class="gps-controls">
+      <button class="gps-btn-record" id="gpsBtnRecord" onclick="toggleGpsRecording()">
+        <span class="gps-btn-icon" id="gpsBtnIcon">&#9679;</span>
+        <span id="gpsBtnLabel">Start</span>
+      </button>
+      <div class="gps-instruction" id="gpsInstruction">Walk the boundary of the area worked, then tap Stop. You can record multiple separate patches.</div>
+    </div>
+
+    <!-- Patches list -->
+    <div id="gpsPatchList" class="gps-patches" style="display:none;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--ink3);margin-bottom:4px;">Recorded patches</div>
+    </div>
+
+    <!-- Total area -->
+    <div class="gps-total-bar" id="gpsTotalBar" style="display:none;">
+      <div class="gps-total-label">Total area</div>
+      <div class="gps-total-val" id="gpsTotalVal">0.000 ha</div>
+    </div>
+
+    <!-- Action row -->
+    <div class="flex gap8" id="gpsActionRow" style="display:none!important;">
+      <button class="btn btn-outline flex1" onclick="gpsAddPatch()">+ Add another patch</button>
+      <button class="btn btn-green flex1" onclick="gpsApplyArea()">&#10003; Use this area</button>
+    </div>
+    <div style="height:8px;"></div>
+  </div>
+</div>
+
+<!-- ============================= SCRIPT ============================= -->
+<script>
+// ================================================================
+// STATE
+// ================================================================
+const DCROP = ['Rosella','Peppermint','Moringa','Chilli','Gotu Kola','Dandelion','Maize','Tomato','Tobacco','Citrus'];
+const DOPS  = ['Weeding','Irrigation','Planting / Transplanting','Harvesting','Spraying','Fertilising','Land Preparation','Pruning / Thinning','Grading / Sorting','Packaging','Scouting / Monitoring','Drainage','Bird Scaring'];
+
+function submitCropRequest(){
+  const name=document.getElementById('reqCropName').value.trim();
+  if(!name){toast('Enter a crop name','amber');return;}
+  const note=document.getElementById('reqCropNote').value.trim();
+  if(!S.cropRequests)S.cropRequests=[];
+  S.cropRequests.push({crop:name,note,from:CU.name,date:new Date().toISOString().split('T')[0],done:false});
+  save();closeModal('modal-requestcrop');
+  document.getElementById('reqCropName').value='';document.getElementById('reqCropNote').value='';
+  toast('Request sent to manager — '+name,'green');
+}
+
+function initState(){
+  return {
+    farms:[{id:'f1',name:'Mushumbi Pools Farm',region:'Mashonaland West',sections:['A1','A2','B1','B2','North Block','South Block','Centre Pivot 1']}],
+    // users: {username: {name, role:'supervisor'|'manager', farm, passHash}}
+    users:{
+      'manager1':{name:'Tim Ashton',role:'manager',farm:'f1',pass:'farm123'},
+      'moses.c':{name:'Moses Chikwanda',role:'supervisor',farm:'f1',pass:'sup123'},
+      'tendai.m':{name:'Tendai Moyo',role:'supervisor',farm:'f1',pass:'sup123'}
+    },
+    crops:[...DCROP].sort((a,b)=>a.localeCompare(b)),
+    operations:[...DOPS].sort((a,b)=>a.localeCompare(b)),
+    dailyRate:4.00,
+    hoursPerDay:8,
+    // pieceRates key = "Crop||Op"
+    // value = {currentRate, unit, weekRate, history:[{rate, from, to}]}
+    pieceRates:{
+      'Chilli||Harvesting':{currentRate:0.080,unit:'wet kg',weekRate:null,history:[{rate:0.075,from:'2025-01-01',to:'2025-09-30'}]},
+      'Rosella||Harvesting':{currentRate:0.120,unit:'wet kg',weekRate:null,history:[]},
+      'Peppermint||Harvesting':{currentRate:0.100,unit:'wet kg',weekRate:null,history:[]}
+    },
+    logs:[]
+  };
+}
+
+let S = loadState();
+let CU = null; // current user {username, name, role, farm}
+let wiz = {};
+let backdateVal = null;
+let approveTarget = null;
+let selectedRateForApproval = null;
+
+function loadState(){
+  try{ const s=localStorage.getItem('fl3');if(s)return JSON.parse(s); }catch(e){}
+  return initState();
+}
+function save(){ localStorage.setItem('fl3',JSON.stringify(S)); }
+
+// ================================================================
+// LOGIN
+// ================================================================
+let selRole = null;
+function selectRole(r){
+  selRole=r;
+  document.getElementById('role-sup').className='role-card'+(r==='supervisor'?' sel-sup':'');
+  document.getElementById('role-mgr').className='role-card'+(r==='manager'?' sel-mgr':'');
+}
+
+function doLogin(){
+  const username=document.getElementById('loginUser').value.trim().toLowerCase();
+  const pass=document.getElementById('loginPass').value;
+  const errEl=document.getElementById('loginError');
+  if(!selRole){errEl.textContent='Please select a role.';errEl.style.display='block';return;}
+  const user=S.users[username];
+  if(!user){errEl.textContent='Username not found. Contact your manager.';errEl.style.display='block';return;}
+  if(user.pass!==pass){errEl.textContent='Incorrect password.';errEl.style.display='block';return;}
+  if(user.role!==selRole){errEl.textContent='This account is registered as '+user.role+', not '+selRole+'.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  CU={username,name:user.name,role:user.role,farm:user.farm};
+  showApp();
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&document.getElementById('screen-login').classList.contains('active'))doLogin(); });
+
+function doLogout(){
+  CU=null;selRole=null;
+  document.getElementById('screen-login').classList.add('active');
+  document.getElementById('screen-app').classList.remove('active');
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginError').style.display='none';
+  document.getElementById('role-sup').className='role-card';
+  document.getElementById('role-mgr').className='role-card';
+}
+
+function showApp(){
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('screen-app').classList.add('active');
+  document.getElementById('topbarUser').textContent=CU.name;
+  const today=new Date();
+  document.getElementById('topbarDate').textContent=today.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+  const pill=document.getElementById('rolePill');
+  pill.textContent=CU.role==='manager'?'MANAGER':'SUPERVISOR';
+  pill.className='role-pill '+(CU.role==='manager'?'mgr':'sup');
+  buildBottomNav();
+  switchTab(CU.role==='manager'?'dashboard':'log');
+}
+
+function setupFirstFarm(){
+  const name=document.getElementById('lf-name').value.trim();
+  const mgrUser=document.getElementById('lf-mgr-user').value.trim().toLowerCase();
+  const mgrPass=document.getElementById('lf-mgr-pass').value;
+  if(!name||!mgrUser||!mgrPass){toast('Fill in all required fields','amber');return;}
+  const fid='f'+Date.now();
+  const sections=document.getElementById('lf-sections').value.split(',').map(s=>s.trim()).filter(Boolean);
+  S.farms.push({id:fid,name,region:document.getElementById('lf-region').value.trim(),sections});
+  S.users[mgrUser]={name:'Manager',role:'manager',farm:fid,pass:mgrPass};
+  save();
+  closeModal('modal-addfarm-login');
+  toast('Farm created — log in with your manager credentials','green');
+}
+
+// ================================================================
+// BOTTOM NAV
+// ================================================================
+const SUP_TABS=[{id:'log',icon:'➕',label:'Log Task'},{id:'mylog',icon:'📋',label:'My Log'}];
+const MGR_TABS=[{id:'dashboard',icon:'📊',label:'Dashboard'},{id:'approve',icon:'✓',label:'Approve'},{id:'alllogs',icon:'📋',label:'All Logs'},{id:'settings',icon:'⚙',label:'Settings'}];
+
+function buildBottomNav(){
+  const tabs=CU.role==='manager'?MGR_TABS:SUP_TABS;
+  document.getElementById('bottomNav').innerHTML=tabs.map(t=>`
+    <button class="bnav-item" id="bnav-${t.id}" onclick="switchTab('${t.id}')">
+      <div class="bnav-icon">${t.icon}${t.id==='approve'?'<span id="appBadge"></span>':''}</div>
+      <div class="bnav-label">${t.label}</div>
+    </button>`).join('');
+}
+
+function switchTab(id){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  const tabs=CU.role==='manager'?MGR_TABS:SUP_TABS;
+  const cls=CU.role==='manager'?'a-mgr':'a-sup';
+  tabs.forEach(t=>{const el=document.getElementById('bnav-'+t.id);if(el)el.className='bnav-item'+(t.id===id?' '+cls:'');});
+  if(id==='log')initWizard();
+  if(id==='mylog')renderMyLog();
+  if(id==='approve')renderApprovalQueue();
+  if(id==='alllogs')renderAllLogs();
+  if(id==='dashboard')renderDashboard();
+  if(id==='settings')renderSettings();
+}
+
+// ================================================================
+// WIZARD
+// ================================================================
+const WSTEPS=6;
+function initWizard(){
+  wiz={step:1,crop:'',op:'',section:'',payType:'',workers:0,hours:0,area:0,areaUnit:'ha',gpsMeasured:false,pieceWorkers:0,pieceOutput:0,pieceUnit:'wet kg',overrideRate:null,notes:'',_cost:0,_rateUsed:null};
+  const farm=getFarm(CU.farm);
+  document.getElementById('logFarmLabel').textContent=farm?farm.name+(farm.region?' — '+farm.region:''):'';
+  const td=new Date();
+  const logDateEl=document.getElementById('logTodayDate');
+  if(logDateEl)logDateEl.textContent='Today: '+td.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const gpsNote=document.getElementById('gpsAreaNote');
+  if(gpsNote)gpsNote.style.display='none';
+  // Build progress dots
+  document.getElementById('wizProg').innerHTML=Array.from({length:WSTEPS},(_,i)=>`<div class="wdot" id="wd${i+1}"></div>`).join('');
+  showStep(1);
+  renderChips();
+}
+
+function getFarm(id){return S.farms.find(f=>f.id===id);}
+
+function showStep(n){
+  wiz.step=n;
+  document.querySelectorAll('.wizard-step').forEach(s=>s.classList.remove('active'));
+  const sid=n<=3?'ws'+n:n===4?'ws4':n===5?(wiz.payType==='piece'?'ws5b':'ws5a'):'ws6';
+  document.getElementById(sid).classList.add('active');
+  for(let i=1;i<=WSTEPS;i++){const d=document.getElementById('wd'+i);if(d)d.className='wdot'+(i<n?' done':i===n?' active':'');}
+  document.getElementById('btnBack').style.visibility=n>1?'visible':'hidden';
+  document.getElementById('btnNext').textContent=n===WSTEPS?'✓ Submit for Approval':'Next →';
+  document.getElementById('voiceSection').style.display=n===WSTEPS?'none':'flex';
+  if(n===5&&wiz.payType==='piece')updatePieceDisplay();
+  // Breadcrumb
+  const parts=[];
+  if(wiz.crop)parts.push(wiz.crop);
+  if(wiz.op)parts.push(wiz.op);
+  if(wiz.section)parts.push(wiz.section);
+  if(wiz.payType)parts.push(wiz.payType==='time'?'Time rate':'Piece rate');
+  const bc=document.getElementById('wizBreadcrumb');
+  if(bc)bc.innerHTML=parts.length?parts.map((p,i)=>`<span style="color:${i===parts.length-1?'var(--green)':'var(--ink3)'};">${p}</span>`).join(' <span style="color:var(--border2);">›</span> '):'';
+}
+
+function renderChips(){
+  const farm=getFarm(CU.farm);
+  mkChips('cropChips',[...S.crops].sort((a,b)=>a.localeCompare(b)),wiz.crop,v=>{wiz.crop=v;wizardNext();});
+  mkChips('opChips',[...S.operations].sort((a,b)=>a.localeCompare(b)),wiz.op,v=>{wiz.op=v;wizardNext();});
+  mkChips('sectionChips',farm?[...farm.sections].sort((a,b)=>a.localeCompare(b)):[],wiz.section,v=>{wiz.section=v;wizardNext();});
+}
+
+function mkChips(id,items,sel,cb){
+  const el=document.getElementById(id);if(!el)return;
+  el.innerHTML=items.map(item=>`<div class="chip${item===sel?' selected':''}" onclick="(${cb.toString()})('${item.replace(/'/g,"\\'")}')">
+    ${item}
+  </div>`).join('');
+}
+
+function wizardNext(){
+  const n=wiz.step;
+  if(n===1&&!wiz.crop){toast('Select a crop','amber');return;}
+  if(n===2&&!wiz.op){toast('Select an operation','amber');return;}
+  if(n===3&&!wiz.section){toast('Select a section','amber');return;}
+  if(n===4&&!wiz.payType){toast('Select pay type','amber');return;}
+  if(n===5){
+    if(wiz.payType==='time'){
+      wiz.workers=parseFloat(document.getElementById('workerCount').value)||0;
+      wiz.hours=parseFloat(document.getElementById('hoursWorked').value)||0;
+      wiz.area=parseFloat(document.getElementById('areaCovered').value)||0;
+      wiz.areaUnit='ha';
+      if(!wiz.workers||!wiz.hours){toast('Enter workers and hours','amber');return;}
+    }else{
+      wiz.pieceWorkers=parseFloat(document.getElementById('pieceWorkers').value)||0;
+      wiz.pieceOutput=parseFloat(document.getElementById('pieceOutput').value)||0;
+      wiz.pieceUnit=document.getElementById('pieceUnit').value;
+      wiz.overrideRate=parseFloat(document.getElementById('pieceOverrideRate').value)||null;
+      if(!wiz.pieceWorkers||!wiz.pieceOutput){toast('Enter workers and output','amber');return;}
+    }
+    buildConfirmBox();
+  }
+  if(n===WSTEPS){submitLog();return;}
+  showStep(n+1);renderChips();
+}
+
+function wizardBack(){if(wiz.step>1){showStep(wiz.step-1);renderChips();}}
+
+function selectPayType(t){
+  wiz.payType=t;
+  document.getElementById('pt-time').className='paytype-card'+(t==='time'?' selected':'');
+  document.getElementById('pt-piece').className='paytype-card'+(t==='piece'?' selected':'');
+  setTimeout(()=>wizardNext(),180);
+}
+
+function updatePieceDisplay(){
+  const key=wiz.crop+'||'+wiz.op;
+  const pr=S.pieceRates[key];
+  const el=document.getElementById('pieceRateDisplay');
+  if(pr){
+    const activeRate=pr.weekRate||pr.currentRate;
+    const isOverride=!!pr.weekRate;
+    el.innerHTML=`<div style="background:var(--green3);border:2px solid var(--green4);border-radius:var(--radius);padding:10px 14px;font-size:13px;">
+      <span style="font-weight:700;color:var(--ink);">Current rate: </span>
+      <span style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--green);">${fmtMoney(activeRate)} per ${pr.unit}</span>
+      ${isOverride?'<span class="override-badge" style="margin-left:8px;">WEEK OVERRIDE</span>':''}
+      <br><span style="color:var(--ink3);font-size:11px;">Standard rate: ${fmtMoney(pr.currentRate)} / ${pr.unit}</span>
+    </div>`;
+    document.getElementById('pieceUnit').value=pr.unit;
+  }else{
+    el.innerHTML=`<div style="background:var(--amber3);border:2px solid var(--amber4);border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--amber);">
+      No piece rate set for ${wiz.crop} / ${wiz.op}. A manager can add one in Settings. You can enter a manual rate below.
+    </div>`;
+  }
+  const overrideEl=document.getElementById('pieceOverrideNote');
+  overrideEl.textContent='Enter a rate above only if this task has a specific rate different to the current standard — e.g. older drier crop. The reason will be noted on the entry.';
+}
+
+function calcCost(){
+  if(wiz.payType==='time'){
+    return wiz.workers*wiz.hours*(S.dailyRate/S.hoursPerDay);
+  }else{
+    const key=wiz.crop+'||'+wiz.op;
+    const pr=S.pieceRates[key];
+    if(wiz.overrideRate){return wiz.pieceOutput*wiz.overrideRate;}
+    if(!pr)return 0;
+    return wiz.pieceOutput*(pr.weekRate||pr.currentRate);
+  }
+}
+
+function getRateUsed(){
+  if(wiz.payType!=='piece')return null;
+  if(wiz.overrideRate)return{rate:wiz.overrideRate,type:'manual-override'};
+  const key=wiz.crop+'||'+wiz.op;
+  const pr=S.pieceRates[key];
+  if(!pr)return null;
+  return{rate:pr.weekRate||pr.currentRate,type:pr.weekRate?'week-override':'standard'};
+}
+
+function buildConfirmBox(){
+  wiz._cost=calcCost();
+  wiz._rateUsed=getRateUsed();
+  let costLine='',kpiLine='';
+  if(wiz.payType==='time'){
+    const hr=S.dailyRate/S.hoursPerDay;
+    const totalPersonHours=wiz.workers*wiz.hours;
+    const costPerWorker=wiz.workers>0?wiz._cost/wiz.workers:0;
+    costLine=`${wiz.workers} workers × ${wiz.hours} hrs @ ${fmtMoney(S.dailyRate)}/day (${fmtMoney(hr)}/hr)`;
+    kpiLine=`${fmtMoney(costPerWorker)} per worker`;
+    if(wiz.area>0){const haPerDay=wiz.area/(wiz.workers*wiz.hours/S.hoursPerDay);kpiLine+=` · ${haPerDay.toFixed(4)} ha/worker-day`;}
+  }else{
+    const ru=wiz._rateUsed;
+    const rateStr=ru?fmtMoney(ru.rate):'--';
+    const perWorker=wiz.pieceWorkers>0?wiz.pieceOutput/wiz.pieceWorkers:0;
+    costLine=`${wiz.pieceOutput} ${wiz.pieceUnit} @ ${rateStr}/${wiz.pieceUnit}${ru&&ru.type==='manual-override'?' (manual override)':ru&&ru.type==='week-override'?' (week override)':''}`;
+    kpiLine=`${perWorker.toFixed(1)} ${wiz.pieceUnit} per worker · ${fmtMoney(wiz.pieceWorkers>0?wiz._cost/wiz.pieceWorkers:0)} per worker`;
+  }
+  document.getElementById('confirmBox').innerHTML=`
+    <div class="confirm-box">
+      <div class="confirm-grid">
+        <div><div class="ci-label">Crop</div><div class="ci-val">${wiz.crop}</div></div>
+        <div><div class="ci-label">Operation</div><div class="ci-val">${wiz.op}</div></div>
+        <div><div class="ci-label">Section</div><div class="ci-val">${wiz.section}</div></div>
+        <div><div class="ci-label">Pay type</div><div class="ci-val">${wiz.payType==='time'?'Time rate':'Piece rate'}</div></div>
+        ${wiz.payType==='time'
+          ?`<div><div class="ci-label">Workers</div><div class="ci-val">${wiz.workers} workers</div></div><div><div class="ci-label">Hours</div><div class="ci-val">${wiz.hours} hrs</div></div>`
+          :`<div><div class="ci-label">Workers</div><div class="ci-val">${wiz.pieceWorkers} workers</div></div><div><div class="ci-label">Output</div><div class="ci-val">${wiz.pieceOutput} ${wiz.pieceUnit}</div></div>`}
+      </div>
+      <div style="border-top:1px solid var(--green4);padding-top:10px;">
+        <div class="ci-label">Calculated cost</div>
+        <div style="font-size:12px;color:var(--ink3);margin-bottom:4px;">${costLine}</div>
+        <div class="confirm-cost">${fmtMoney(wiz._cost)}</div>
+      </div>
+      <div style="border-top:1px solid var(--green4);padding-top:10px;margin-top:10px;">
+        <div class="ci-label">KPI — productivity this task</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--blue2);">${kpiLine}</div>
+      </div>
+    </div>`;
+}
+
+function submitLog(){
+  wiz.notes=document.getElementById('taskNotes').value.trim();
+  const farm=getFarm(CU.farm);
+  const logDate=backdateVal||new Date().toISOString().split('T')[0];
+  const log={
+    id:'l'+Date.now(),farm:CU.farm,farmName:farm?farm.name:'',
+    supervisor:CU.name,supervisorUser:CU.username,
+    date:logDate,backdated:!!backdateVal,
+    crop:wiz.crop,op:wiz.op,section:wiz.section,
+    payType:wiz.payType,
+    workers:wiz.payType==='time'?wiz.workers:wiz.pieceWorkers,
+    hours:wiz.payType==='time'?wiz.hours:0,
+    area:wiz.area,areaUnit:'ha',gpsMeasured:wiz.gpsMeasured||false,
+    pieceOutput:wiz.pieceOutput,pieceUnit:wiz.pieceUnit,
+    rateUsed:wiz._rateUsed,
+    cost:wiz._cost,notes:wiz.notes,
+    status:'pending',synced:false,
+    loggedAt:new Date().toISOString()
+  };
+  S.logs.unshift(log);save();
+  toast('Submitted for approval — '+fmtMoney(log.cost)+' on '+log.crop,'green');
+  setTimeout(()=>initWizard(),700);
+  updateApproveBadge();
+}
+
+function addQuickSection(){
+  const farm=getFarm(CU.farm);
+  const v=document.getElementById('quickSecInput').value.trim();
+  if(!v||!farm)return;
+  if(!farm.sections.includes(v)){farm.sections.push(v);save();}
+  wiz.section=v;document.getElementById('quickSecInput').value='';
+  renderChips();wizardNext();
+}
+
+// ================================================================
+// BACKDATE
+// ================================================================
+document.addEventListener('DOMContentLoaded',()=>{
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('backdateInput').max=today;
+  document.getElementById('mylogDate').value=today;
+  if(S.logs.length===0)seedDemo();
+});
+
+function applyBackdate(){
+  const v=document.getElementById('backdateInput').value;
+  if(!v){toast('Select a date','amber');return;}
+  backdateVal=v;
+  document.getElementById('backdateLabel').textContent=fmtDate(v);
+  document.getElementById('backdateBanner').style.display='flex';
+  closeModal('modal-backdate');
+  toast('Logging for '+fmtDate(v),'amber');
+}
+function clearBackdate(){backdateVal=null;document.getElementById('backdateBanner').style.display='none';}
+
+// ================================================================
+// MY LOG (supervisor)
+// ================================================================
+function clearMyLogFilters(){
+  document.getElementById('mylogDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('mylogCropF').value='';
+  renderMyLog();
+}
+
+function renderMyLog(){
+  const dateVal=document.getElementById('mylogDate').value||new Date().toISOString().split('T')[0];
+  const cropF=document.getElementById('mylogCropF').value;
+  document.getElementById('mylogSub').textContent=fmtDate(dateVal);
+  const myLogs=S.logs.filter(l=>l.supervisorUser===CU.username);
+  const crops=[...new Set(myLogs.map(l=>l.crop))].sort();
+  document.getElementById('mylogCropF').innerHTML='<option value="">All crops</option>'+crops.map(c=>`<option value="${c}"${c===cropF?' selected':''}>${c}</option>`).join('');
+  let logs=myLogs.filter(l=>l.date===dateVal);
+  if(cropF)logs=logs.filter(l=>l.crop===cropF);
+  const el=document.getElementById('mylogList');
+  if(!logs.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No entries for this date</div><div class="empty-sub">Switch to Log Task to record tasks</div></div>';return;}
+  const total=logs.reduce((a,l)=>a+l.cost,0);
+  // For each log build KPI comparison
+  el.innerHTML=logs.map(l=>{
+    const card=logCard(l,true);
+    // Find historical entries for same crop+op by this supervisor (approved, different date)
+    const hist=myLogs.filter(h=>h.status==='approved'&&h.crop===l.crop&&h.op===l.op&&h.date!==dateVal&&h.payType===l.payType);
+    let kpiHtml='';
+    if(hist.length&&l.payType==='piece'){
+      const avgOutput=hist.reduce((a,h)=>a+(h.workers>0?h.pieceOutput/h.workers:0),0)/hist.length;
+      const thisOutput=l.workers>0?l.pieceOutput/l.workers:0;
+      const trend=thisOutput>=avgOutput?'▲ above':'▼ below';
+      const trendCol=thisOutput>=avgOutput?'var(--green)':'var(--red)';
+      kpiHtml=`<div style="background:var(--blue3);border:1px solid #bcd4f0;border-radius:var(--radius);padding:8px 12px;margin-top:6px;font-size:12px;">
+        <span style="font-weight:700;color:var(--blue2);">KPI vs history (${hist.length} entries):</span>
+        This task: <strong>${(thisOutput).toFixed(1)} ${l.pieceUnit}/worker</strong> ·
+        Avg: <strong>${avgOutput.toFixed(1)} ${l.pieceUnit}/worker</strong> ·
+        <span style="color:${trendCol};font-weight:700;">${trend} average</span>
+      </div>`;
+    }else if(hist.length&&l.payType==='time'&&l.area>0){
+      const avgHa=hist.filter(h=>h.area>0).reduce((a,h)=>a+(h.workers>0&&h.hours>0?h.area/(h.workers*h.hours/S.hoursPerDay):0),0)/Math.max(1,hist.filter(h=>h.area>0).length);
+      const thisHa=l.workers>0&&l.hours>0?l.area/(l.workers*l.hours/S.hoursPerDay):0;
+      if(avgHa>0){
+        const trend=thisHa>=avgHa?'▲ above':'▼ below';
+        const trendCol=thisHa>=avgHa?'var(--green)':'var(--red)';
+        kpiHtml=`<div style="background:var(--blue3);border:1px solid #bcd4f0;border-radius:var(--radius);padding:8px 12px;margin-top:6px;font-size:12px;">
+          <span style="font-weight:700;color:var(--blue2);">KPI vs history (${hist.length} entries):</span>
+          This task: <strong>${thisHa.toFixed(4)} ha/worker-day</strong> ·
+          Avg: <strong>${avgHa.toFixed(4)} ha/worker-day</strong> ·
+          <span style="color:${trendCol};font-weight:700;">${trend} average</span>
+        </div>`;
+      }
+    }
+    return card+(kpiHtml?`<div style="margin:-4px 0 8px;">${kpiHtml}</div>`:'');
+  }).join('')+
+    `<div style="text-align:right;padding:10px 4px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--ink2);">Day total: <span style="color:var(--green);font-size:20px;">${fmtMoney(total)}</span></div>`;
+}
+
+function logCard(log, showApprover){
+  let tags=`<span class="log-tag">${log.op}</span><span class="log-tag">${log.section}</span>`;
+  if(log.payType==='time'){
+    tags+=`<span class="log-tag">${log.workers} workers</span><span class="log-tag">${log.hours} hrs</span>`;
+    if(log.area)tags+=`<span class="log-tag">${parseFloat(log.area).toFixed(4)} ha${log.gpsMeasured?' 📍':''}</span>`;
+  }else{
+    tags+=`<span class="log-tag">${log.workers} workers</span><span class="log-tag">${log.pieceOutput} ${log.pieceUnit}</span>`;
+    if(log.rateUsed)tags+=`<span class="log-tag" style="background:var(--green3);color:var(--green);">${fmtMoney(log.rateUsed.rate)}/${log.pieceUnit}</span>`;
+  }
+  if(log.backdated)tags+=`<span class="log-tag" style="background:var(--amber3);color:var(--amber);">Backdated</span>`;
+  const sLabel=log.status==='approved'?'✓ Approved':log.status==='rejected'?'✕ Rejected':'⏳ Awaiting approval';
+  const sCls=log.status==='approved'?'s-approved':log.status==='rejected'?'s-rejected':'s-pending';
+  let extra='';
+  if(showApprover&&log.status==='approved'&&log.approvedBy)extra+=`<div style="font-size:11px;color:var(--ink3);margin-top:3px;">✓ Approved by: <strong>${log.approvedBy}</strong></div>`;
+  if(log.status==='rejected'&&log.rejectReason)extra+=`<div style="font-size:11px;color:var(--red);margin-top:3px;background:var(--red3);padding:4px 8px;border-radius:4px;">✕ Rejected by ${log.rejectedBy||'manager'}: ${log.rejectReason}</div>`;
+  if(log.notes)extra+=`<div style="font-size:12px;color:var(--ink3);margin-top:3px;">📝 ${log.notes}</div>`;
+  return`<div class="log-entry ${log.status}">
+    <div class="log-crop"><span>${log.crop}</span><span class="log-cost">${fmtMoney(log.cost)}</span></div>
+    <div class="log-tags">${tags}</div>
+    ${extra}
+    <div class="log-status ${sCls}" style="margin-top:5px;">${sLabel}</div>
+  </div>`;
+}
+
+// ================================================================
+// APPROVAL QUEUE (manager)
+// ================================================================
+function renderApprovalQueue(){
+  updateApproveBadge();
+  const pending=S.logs.filter(l=>l.status==='pending');
+  document.getElementById('approveSub').textContent=pending.length+' task'+(pending.length!==1?'s':'')+' awaiting approval';
+  const el=document.getElementById('approvalList');
+  if(!pending.length){el.innerHTML='<div class="empty"><div class="empty-icon">✓</div><div class="empty-title">All caught up</div><div class="empty-sub">No tasks awaiting approval</div></div>';return;}
+  el.innerHTML=pending.map(log=>`
+    <div class="approval-card">
+      <div class="log-crop"><span>${log.crop} — ${log.op}</span><span class="log-cost">${fmtMoney(log.cost)}</span></div>
+      <div class="log-tags">
+        <span class="log-tag">${log.section}</span>
+        <span class="log-tag" style="background:var(--blue3);color:var(--blue);">👤 ${log.supervisor}</span>
+        <span class="log-tag">${fmtDate(log.date)}</span>
+        ${log.payType==='piece'&&log.rateUsed?`<span class="log-tag" style="background:var(--green3);color:var(--green);">${fmtMoney(log.rateUsed.rate)}/${log.pieceUnit}</span>`:''}
+        ${log.backdated?'<span class="log-tag" style="background:var(--amber3);color:var(--amber);">Backdated</span>':''}
+      </div>
+      ${log.payType==='time'?`<div style="font-size:12px;color:var(--ink3);margin-top:4px;">${log.workers} workers × ${log.hours} hrs @ ${fmtMoney(S.dailyRate)}/day</div>`:`<div style="font-size:12px;color:var(--ink3);margin-top:4px;">${log.pieceOutput} ${log.pieceUnit}</div>`}
+      ${log.notes?`<div style="font-size:12px;color:var(--ink3);margin-top:3px;">📝 ${log.notes}</div>`:''}
+      <div class="approval-actions">
+        <button class="btn btn-danger btn-sm flex1" onclick="openRejectModal('${log.id}')">✕ Reject</button>
+        <button class="btn btn-green btn-sm flex1" onclick="quickApprove('${log.id}')">✓ Approve</button>
+        <button class="btn btn-outline btn-sm" onclick="openApproveDetail('${log.id}')">Detail →</button>
+      </div>
+    </div>`).join('');
+}
+
+function updateApproveBadge(){
+  const n=S.logs.filter(l=>l.status==='pending').length;
+  const el=document.getElementById('appBadge');
+  if(el)el.innerHTML=n>0?`<span class="badge">${n}</span>`:'';
+}
+
+function quickApprove(id){
+  const log=S.logs.find(l=>l.id===id);
+  if(!log)return;
+  // Check for rate mismatch
+  if(log.payType==='piece'&&log.rateUsed){
+    const key=log.crop+'||'+log.op;
+    const pr=S.pieceRates[key];
+    if(pr){
+      const currentActive=pr.weekRate||pr.currentRate;
+      if(Math.abs(currentActive-log.rateUsed.rate)>0.0001){
+        openApproveDetail(id);return; // Force through detail view for mismatch
+      }
+    }
+  }
+  doApprove(log,log.cost);
+  renderApprovalQueue();updateApproveBadge();
+  toast('Approved — '+fmtMoney(log.cost)+' on '+log.crop,'green');
+}
+
+function doApprove(log,finalCost){
+  log.status='approved';log.cost=finalCost;
+  log.approvedBy=CU.name;log.approvedAt=new Date().toISOString();
+  save();
+}
+
+function openApproveDetail(id){
+  approveTarget=id;selectedRateForApproval=null;
+  const log=S.logs.find(l=>l.id===id);if(!log)return;
+  // Build detail
+  let tagsHtml='';
+  if(log.payType==='time'){tagsHtml=`${log.workers} workers × ${log.hours} hrs @ ${fmtMoney(S.dailyRate)}/day (${fmtMoney(S.dailyRate/S.hoursPerDay)}/hr) = ${fmtMoney(log.cost)}`;}
+  else{tagsHtml=`${log.pieceOutput} ${log.pieceUnit} · ${log.workers} workers`;}
+  document.getElementById('approveDetailContent').innerHTML=`
+    <div style="background:var(--bg2);border-radius:var(--radius-lg);padding:14px;margin-bottom:14px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div><div class="ci-label">Crop</div><div class="ci-val">${log.crop}</div></div>
+        <div><div class="ci-label">Operation</div><div class="ci-val">${log.op}</div></div>
+        <div><div class="ci-label">Section</div><div class="ci-val">${log.section}</div></div>
+        <div><div class="ci-label">Farm</div><div class="ci-val">${log.farmName}</div></div>
+        <div><div class="ci-label">Submitted by</div><div class="ci-val" style="color:var(--blue);">${log.supervisor}</div></div>
+        <div><div class="ci-label">Date</div><div class="ci-val">${fmtDate(log.date)}${log.backdated?' (backdated)':''}</div></div>
+        <div><div class="ci-label">${log.payType==='time'?'Workers / Hours':'Workers / Output'}</div><div class="ci-val">${tagsHtml}</div></div>
+        <div><div class="ci-label">Pay type</div><div class="ci-val">${log.payType==='time'?'Time rate':'Piece rate'}</div></div>
+      </div>
+      ${log.notes?`<div style="font-size:12px;color:var(--ink3);">📝 ${log.notes}</div>`:''}
+    </div>`;
+  // Rate mismatch check
+  const mismatchEl=document.getElementById('rateMismatchSection');
+  mismatchEl.innerHTML='';
+  if(log.payType==='piece'&&log.rateUsed){
+    const key=log.crop+'||'+log.op;
+    const pr=S.pieceRates[key];
+    if(pr){
+      const currentActive=pr.weekRate||pr.currentRate;
+      const loggedRate=log.rateUsed.rate;
+      if(Math.abs(currentActive-loggedRate)>0.0001){
+        const costAtLogged=log.pieceOutput*loggedRate;
+        const costAtCurrent=log.pieceOutput*currentActive;
+        mismatchEl.innerHTML=`
+          <div class="rate-mismatch">
+            <div class="rate-mismatch-title">⚠ Rate has changed since this was logged</div>
+            <p style="font-size:12px;color:var(--ink2);margin-bottom:12px;">Choose which rate to use when approving:</p>
+            <div class="rate-option" id="ro-logged" onclick="selectApprovalRate('logged',${loggedRate},${costAtLogged})">
+              <div>
+                <div class="rate-option-label">Use rate at time of logging: ${fmtMoney(loggedRate)}/${log.pieceUnit}</div>
+                <div class="rate-option-detail">Cost: ${fmtMoney(costAtLogged)} — rate type: ${log.rateUsed.type}</div>
+              </div>
+            </div>
+            <div class="rate-option" id="ro-current" onclick="selectApprovalRate('current',${currentActive},${costAtCurrent})">
+              <div>
+                <div class="rate-option-label">Use current rate: ${fmtMoney(currentActive)}/${log.pieceUnit}</div>
+                <div class="rate-option-detail">Cost: ${fmtMoney(costAtCurrent)} — ${pr.weekRate?'week override active':'standard rate'}</div>
+              </div>
+            </div>
+          </div>`;
+        return openModal('modal-approve-detail');
+      }
+    }
+    // No mismatch — show rate used
+    mismatchEl.innerHTML=`<div style="font-size:13px;color:var(--green);margin-bottom:12px;">✓ Rate unchanged since logging: ${fmtMoney(log.rateUsed.rate)}/${log.pieceUnit} — Cost: ${fmtMoney(log.cost)}</div>`;
+  }else if(log.payType==='time'){
+    mismatchEl.innerHTML=`<div style="font-size:13px;color:var(--ink3);margin-bottom:12px;">Time rate cost: ${fmtMoney(log.cost)}</div>`;
+  }
+  openModal('modal-approve-detail');
+}
+
+function selectApprovalRate(which,rate,cost){
+  selectedRateForApproval={which,rate,cost};
+  document.getElementById('ro-logged').className='rate-option'+(which==='logged'?' selected':'');
+  document.getElementById('ro-current').className='rate-option'+(which==='current'?' selected':'');
+}
+
+function approveFromDetail(){
+  const log=S.logs.find(l=>l.id===approveTarget);if(!log)return;
+  // If mismatch section was shown, require selection
+  const ms=document.getElementById('rateMismatchSection');
+  if(ms.innerHTML&&ms.innerHTML.includes('rate-mismatch')&&!selectedRateForApproval){
+    toast('Please select which rate to use','amber');return;
+  }
+  const finalCost=selectedRateForApproval?selectedRateForApproval.cost:log.cost;
+  if(selectedRateForApproval){log.rateUsed={rate:selectedRateForApproval.rate,type:'approved-override'};}
+  doApprove(log,finalCost);
+  closeModal('modal-approve-detail');
+  renderApprovalQueue();updateApproveBadge();
+  toast('Approved — '+fmtMoney(finalCost)+' on '+log.crop,'green');
+}
+
+function rejectFromDetail(){
+  closeModal('modal-approve-detail');
+  openRejectModal(approveTarget);
+}
+
+// ================================================================
+// REJECT WITH REASON
+// ================================================================
+let rejectTargetId=null;
+function openRejectModal(id){
+  rejectTargetId=id;
+  const log=S.logs.find(l=>l.id===id);if(!log)return;
+  document.getElementById('rejectEntryPreview').innerHTML=`
+    <div style="background:var(--bg2);border-radius:var(--radius);padding:10px 14px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;">${log.crop} — ${log.op}</div>
+      <div style="font-size:12px;color:var(--ink3);">${log.supervisor} · ${fmtDate(log.date)} · ${fmtMoney(log.cost)}</div>
+    </div>`;
+  document.getElementById('rejectReason').value='';
+  openModal('modal-reject');
+}
+
+function confirmReject(){
+  const log=S.logs.find(l=>l.id===rejectTargetId);if(!log)return;
+  const reason=document.getElementById('rejectReason').value.trim();
+  if(!reason){toast('Please enter a reason','amber');return;}
+  log.status='rejected';log.rejectReason=reason;log.rejectedBy=CU.name;
+  save();closeModal('modal-reject');
+  renderApprovalQueue();updateApproveBadge();
+  toast('Entry rejected','red');
+}
+
+// ================================================================
+// ALL LOGS (manager)
+// ================================================================
+function clearAllLogsFilters(){
+  ['alFrom','alTo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['alCrop','alOp','alSup','alSection','alFarm'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  renderAllLogs();
+}
+
+function renderAllLogs(){
+  const fromDate=document.getElementById('alFrom').value;
+  const toDate=document.getElementById('alTo').value;
+  const cropF=document.getElementById('alCrop').value;
+  const opF=document.getElementById('alOp').value;
+  const supF=document.getElementById('alSup').value;
+  const secF=document.getElementById('alSection').value;
+  const farmF=document.getElementById('alFarm').value;
+  // Populate filters
+  const allApproved=S.logs.filter(l=>l.status==='approved');
+  populateFilter('alCrop',allApproved,'crop',cropF);
+  populateFilter('alOp',allApproved,'op',opF);
+  populateFilter('alSup',allApproved,'supervisor',supF);
+  populateFilter('alSection',allApproved,'section',secF);
+  populateFilter('alFarm',allApproved,'farmName',farmF);
+  let logs=[...allApproved];
+  if(fromDate)logs=logs.filter(l=>l.date>=fromDate);
+  if(toDate)logs=logs.filter(l=>l.date<=toDate);
+  if(cropF)logs=logs.filter(l=>l.crop===cropF);
+  if(opF)logs=logs.filter(l=>l.op===opF);
+  if(supF)logs=logs.filter(l=>l.supervisor===supF);
+  if(secF)logs=logs.filter(l=>l.section===secF);
+  if(farmF)logs=logs.filter(l=>l.farmName===farmF);
+  const el=document.getElementById('alllogsList');
+  if(!logs.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No approved logs match filters</div></div>';return;}
+  const total=logs.reduce((a,l)=>a+l.cost,0);
+  el.innerHTML=logs.map(l=>`
+    <div class="log-entry approved">
+      <div class="log-crop"><span>${l.crop} — ${l.op}</span><span class="log-cost">${fmtMoney(l.cost)}</span></div>
+      <div class="log-tags">
+        <span class="log-tag">${l.section}</span>
+        <span class="log-tag" style="background:var(--blue3);color:var(--blue);">👤 ${l.supervisor}</span>
+        <span class="log-tag">${fmtDate(l.date)}</span>
+        <span class="log-tag">${l.payType==='time'?l.workers+'w × '+l.hours+'h':l.pieceOutput+' '+l.pieceUnit}</span>
+        ${l.payType==='time'&&l.area?`<span class="log-tag">${parseFloat(l.area).toFixed(4)} ha${l.gpsMeasured?' 📍':''}</span>`:''}
+        ${l.rateUsed?`<span class="log-tag" style="background:var(--green3);color:var(--green);">${fmtMoney(l.rateUsed.rate)}/${l.pieceUnit}</span>`:''}
+        ${l.backdated?'<span class="log-tag" style="background:var(--amber3);color:var(--amber);">Backdated</span>':''}
+      </div>
+      ${l.notes?`<div style="font-size:11px;color:var(--ink3);margin-top:3px;">📝 ${l.notes}</div>`:''}
+    </div>`).join('')+
+    `<div style="text-align:right;padding:10px 4px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--ink2);">Filtered total: <span style="color:var(--green);font-size:20px;">${fmtMoney(total)}</span></div>`;
+}
+
+function populateFilter(elId,logs,field,currentVal){
+  const vals=[...new Set(logs.map(l=>l[field]).filter(Boolean))].sort();
+  const label=elId.startsWith('al')?({alCrop:'All crops',alOp:'All ops',alSup:'All supervisors',alSection:'All sections',alFarm:'All farms'}[elId]||'All'):'All';
+  document.getElementById(elId).innerHTML=`<option value="">${label}</option>`+vals.map(v=>`<option value="${v}"${v===currentVal?' selected':''}>${v}</option>`).join('');
+}
+
+function exportCSV(){
+  const logs=S.logs.filter(l=>l.status==='approved');
+  const rows=[['Date','Farm','Supervisor','Crop','Operation','Section','Pay Type','Workers','Hours','Area ha','GPS Measured','Output','Unit','Rate Used','Cost US$','Notes']];
+  logs.forEach(l=>rows.push([l.date,l.farmName,l.supervisor,l.crop,l.op,l.section,l.payType,l.workers,l.hours||'',l.area?parseFloat(l.area).toFixed(4):'',l.gpsMeasured?'Yes':'',l.pieceOutput||'',l.pieceUnit||'',l.rateUsed?l.rateUsed.rate:'',l.cost.toFixed(2),l.notes]));
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='farmlog_'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click();
+  toast('CSV exported','green');
+}
+
+function exportExcel(){openModal('modal-pro-excel');}
+
+// ================================================================
+// DASHBOARD (manager)
+// ================================================================
+function getISOWeek(d){
+  const date=new Date(d);date.setHours(0,0,0,0);
+  date.setDate(date.getDate()+3-(date.getDay()+6)%7);
+  const week1=new Date(date.getFullYear(),0,4);
+  return 1+Math.round(((date.getTime()-week1.getTime())/86400000-3+(week1.getDay()+6)%7)/7);
+}
+
+function clearDashFilters(){
+  ['dashFarm','dashCrop','dashOp','dashSup'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='all';});
+  renderDashboard();
+}
+
+function renderDashboard(){
+  const period=document.getElementById('dashPeriod').value;
+  const farmF=document.getElementById('dashFarm').value;
+  const cropF=document.getElementById('dashCrop').value;
+  const opF=document.getElementById('dashOp')?document.getElementById('dashOp').value:'all';
+  const supF=document.getElementById('dashSup').value;
+  const now=new Date();
+  let fromDate,periodLabel;
+  if(period==='month'){
+    fromDate=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
+    periodLabel=now.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  }else if(period==='week'){
+    const d=new Date(now);
+    // Week starts Monday (ISO)
+    const day=d.getDay();const diff=day===0?-6:1-day;
+    d.setDate(d.getDate()+diff);
+    fromDate=d.toISOString().split('T')[0];
+    const toDate=new Date(d);toDate.setDate(toDate.getDate()+6);
+    const wn=getISOWeek(now);
+    periodLabel=`Week ${wn} (${d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} — ${toDate.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})})`;
+  }else{
+    fromDate='2000-01-01';periodLabel='All time';
+  }
+  document.getElementById('dashPeriodLabel').textContent=periodLabel;
+  // Populate filters
+  const allApproved=S.logs.filter(l=>l.status==='approved');
+  const crops=[...new Set(allApproved.map(l=>l.crop))].sort();
+  const ops=[...new Set(allApproved.map(l=>l.op))].sort();
+  const sups=[...new Set(allApproved.map(l=>l.supervisor))].sort();
+  document.getElementById('dashFarm').innerHTML='<option value="all">All farms</option>'+S.farms.map(f=>`<option value="${f.id}"${f.id===farmF?' selected':''}>${f.name}</option>`).join('');
+  document.getElementById('dashCrop').innerHTML='<option value="all">All crops</option>'+crops.map(c=>`<option value="${c}"${c===cropF?' selected':''}>${c}</option>`).join('');
+  if(document.getElementById('dashOp'))document.getElementById('dashOp').innerHTML='<option value="all">All operations</option>'+ops.map(o=>`<option value="${o}"${o===opF?' selected':''}>${o}</option>`).join('');
+  document.getElementById('dashSup').innerHTML='<option value="all">All supervisors</option>'+sups.map(s=>`<option value="${s}"${s===supF?' selected':''}>${s}</option>`).join('');
+  let logs=allApproved.filter(l=>l.date>=fromDate);
+  if(farmF!=='all')logs=logs.filter(l=>l.farm===farmF);
+  if(cropF!=='all')logs=logs.filter(l=>l.crop===cropF);
+  if(opF!=='all')logs=logs.filter(l=>l.op===opF);
+  if(supF!=='all')logs=logs.filter(l=>l.supervisor===supF);
+  const totalCost=logs.reduce((a,l)=>a+l.cost,0);
+  const totalWD=logs.reduce((a,l)=>a+(l.payType==='time'?l.workers*l.hours/S.hoursPerDay:l.workers),0);
+  document.getElementById('dashStats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Labour Cost</div><div class="stat-val">${fmtMoney(totalCost)}</div><div class="stat-detail">${logs.length} approved tasks</div></div>
+    <div class="stat-card"><div class="stat-label">Worker Days</div><div class="stat-val amber">${totalWD.toFixed(1)} days</div><div class="stat-detail">All crops combined</div></div>
+    <div class="stat-card"><div class="stat-label">Crops Active</div><div class="stat-val blue">${new Set(logs.map(l=>l.crop)).size}</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Cost / Task</div><div class="stat-val">${logs.length?fmtMoney(totalCost/logs.length):'--'}</div></div>`;
+  const colours=['#1f6e2e','#e07010','#2060a8','#8a4a1a','#2a8a8a','#8a1f6e'];
+  const byCrop=groupSum(logs,'crop');renderBars('cropBars',byCrop,colours);
+  const byOp=groupSum(logs,'op');renderOpTable('opBreakdown',byOp,totalCost,logs);
+  const bySec=groupSum(logs,'section');renderBars('sectionBreakdown',bySec,['#2060a8','#2a8a8a','#5a1f8a']);
+  const bySup=groupSum(logs,'supervisor');renderBars('supBreakdown',bySup,['#8a4a1a','#1f6e2e','#2060a8']);
+}
+
+function groupSum(logs,field){
+  const m={};logs.forEach(l=>{m[l[field]]=(m[l[field]]||0)+l.cost;});
+  return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+}
+
+function renderBars(id,entries,colours){
+  const el=document.getElementById(id);
+  if(!entries.length){el.innerHTML='<div class="text-muted">No data</div>';return;}
+  const max=entries[0][1];
+  el.innerHTML=entries.map(([name,val],i)=>`
+    <div class="bar-wrap">
+      <div class="bar-label-row"><span class="bar-name">${name}</span><span class="bar-val">${fmtMoney(val)}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(val/max*100).toFixed(1)}%;background:${colours[i%colours.length]};"></div></div>
+    </div>`).join('');
+}
+
+function renderOpTable(id,entries,total,logs){
+  const el=document.getElementById(id);
+  if(!entries.length){el.innerHTML='<div class="text-muted">No data</div>';return;}
+  el.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <tr style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--ink3);">
+      <td style="padding:6px 0;">Operation</td><td style="text-align:right;padding:6px 0;">Tasks</td>
+      <td style="text-align:right;padding:6px 0;">Cost</td><td style="text-align:right;padding:6px 0;">Share</td>
+    </tr>
+    ${entries.map(([op,val])=>{
+      const cnt=logs.filter(l=>l.op===op).length;
+      return`<tr style="border-top:1px solid var(--bg3);">
+        <td style="padding:9px 0;font-weight:600;">${op}</td>
+        <td style="text-align:right;color:var(--ink3);">${cnt}</td>
+        <td style="text-align:right;font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--green);">${fmtMoney(val)}</td>
+        <td style="text-align:right;color:var(--ink3);">${total?(val/total*100).toFixed(1):0}%</td>
+      </tr>`;
+    }).join('')}
+  </table>`;
+}
+
+// ================================================================
+// SETTINGS (manager only)
+// ================================================================
+function renderSettings(){
+  const farm=getFarm(CU.farm);
+  document.getElementById('settingsFarmLabel').textContent=farm?farm.name:'';
+  // Farms
+  document.getElementById('farmList').innerHTML=S.farms.map(f=>`
+    <div class="settings-row">
+      <div><div class="settings-row-label">${f.name}</div><div class="settings-row-sub">${f.region||''} · ${f.sections.length} sections</div></div>
+      <button class="btn btn-danger btn-sm" onclick="deleteFarm('${f.id}')">Remove</button>
+    </div>`).join('');
+  // Supervisors
+  const sups=Object.entries(S.users).filter(([u,d])=>d.role==='supervisor');
+  document.getElementById('supList').innerHTML=sups.length?sups.map(([u,d])=>`
+    <div class="settings-row">
+      <div><div class="settings-row-label">${d.name}</div><div class="settings-row-sub">@${u} · ${getFarm(d.farm)?getFarm(d.farm).name:''}</div></div>
+      <button class="btn btn-danger btn-sm" onclick="deleteUser('${u}')">Remove</button>
+    </div>`).join(''):'<div class="text-muted" style="padding:8px 0;">No supervisors added yet</div>';
+  // Managers - with edit name button
+  const mgrs=Object.entries(S.users).filter(([u,d])=>d.role==='manager');
+  document.getElementById('mgrList').innerHTML=mgrs.map(([u,d])=>`
+    <div class="settings-row">
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="text" class="form-input" id="mgrname_${u}" value="${d.name}" style="max-width:200px;padding:6px 10px;font-size:13px;">
+          <button class="btn btn-outline btn-sm" onclick="saveMgrName('${u}')">Save</button>
+        </div>
+        <div class="settings-row-sub">@${u} · ${getFarm(d.farm)?getFarm(d.farm).name:''}</div>
+      </div>
+      ${mgrs.length>1?`<button class="btn btn-danger btn-sm" onclick="deleteUser('${u}')">Remove</button>`:'<span class="text-muted" style="font-size:11px;">Primary</span>'}
+    </div>`).join('');
+  // Tags
+  mkTagList('cropTagList',[...S.crops].sort((a,b)=>a.localeCompare(b)),i=>{S.crops.splice(i,1);save();renderSettings();});
+  mkTagList('opTagList',[...S.operations].sort((a,b)=>a.localeCompare(b)),i=>{S.operations.splice(i,1);save();renderSettings();});
+  // Crop requests
+  const reqs=(S.cropRequests||[]).filter(r=>!r.done);
+  const reqSection=document.getElementById('cropRequestSection');
+  if(reqSection)reqSection.style.display=reqs.length?'block':'none';
+  const reqBadge=document.getElementById('cropReqBadge');
+  if(reqBadge&&reqs.length)reqBadge.innerHTML=`<span class="badge" style="position:relative;top:0;right:0;margin-left:4px;">${reqs.length}</span>`;
+  const reqList=document.getElementById('cropRequestList');
+  if(reqList)reqList.innerHTML=reqs.map((r,i)=>`
+    <div class="settings-row">
+      <div><div class="settings-row-label">${r.crop}</div><div class="settings-row-sub">${r.from} · ${r.date}${r.note?' · '+r.note:''}</div></div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-green btn-sm" onclick="approveCropRequest(${i})">+ Add</button>
+        <button class="btn btn-danger btn-sm" onclick="dismissCropRequest(${i})">Dismiss</button>
+      </div>
+    </div>`).join('')||'<div class="text-muted">No pending requests</div>';
+  document.getElementById('dailyRate').value=S.dailyRate;
+  document.getElementById('hoursPerDay').value=S.hoursPerDay;
+  renderPieceRateTable();
+}
+
+function mkTagList(id,items,onRemove){
+  document.getElementById(id).innerHTML=items.map((item,i)=>
+    `<div class="tag">${item}<span class="tag-x" onclick="(${onRemove.toString()})(${i})">×</span></div>`).join('');
+}
+
+function renderPieceRateTable(){
+  const entries=Object.entries(S.pieceRates);
+  const el=document.getElementById('pieceRateTable');
+  if(!entries.length){el.innerHTML='<div class="text-muted">No piece rates configured yet</div>';return;}
+  el.innerHTML=entries.map(([key,pr])=>{
+    const[crop,op]=key.split('||');
+    const activeRate=pr.weekRate||pr.currentRate;
+    const safeKey=key.replace(/[^a-zA-Z0-9]/g,'_');
+    const histRows=pr.history.length?pr.history.map(h=>`
+      <div class="rate-history-row" style="font-size:11px;color:var(--ink3);display:grid;grid-template-columns:1fr 90px 100px;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);">
+        <span>Previous rate</span><span>${fmtMoney(h.rate)}/${pr.unit}</span><span>${h.from} → ${h.to||'current'}</span>
+      </div>`).join(''):'';
+    return`<div style="background:var(--surface);border:2px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;">${crop} / ${op}</div>
+          <div style="font-size:12px;color:var(--ink3);">Unit: ${pr.unit}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--green);">${fmtMoney(activeRate)}<span style="font-size:12px;font-weight:400;color:var(--ink3);">/${pr.unit}</span></div>
+          ${pr.weekRate?`<div class="override-badge">WEEK OVERRIDE: ${fmtMoney(pr.weekRate)}</div>`:''}
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:8px;">
+        <div>
+          <div class="form-label">Week override rate</div>
+          <div class="flex gap8">
+            <input type="number" class="form-input" id="wo_${safeKey}" value="${pr.weekRate||''}" placeholder="None active" step="0.001" min="0">
+            <button class="btn btn-outline btn-sm" onclick="updateWeekOverride('${key}')">Set</button>
+            ${pr.weekRate?`<button class="btn btn-danger btn-sm" onclick="clearWeekOverride('${key}')">Clear</button>`:''}
+          </div>
+        </div>
+        <div>
+          <div class="form-label">Standard rate</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--ink);padding-top:10px;">${fmtMoney(pr.currentRate)}/${pr.unit}</div>
+        </div>
+      </div>
+      ${histRows?`<div class="rate-history"><div class="rate-history-title">Rate History</div>${histRows}</div>`:''}
+      <div style="margin-top:10px;display:flex;gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="openEditRate('${key}')">✏ Edit standard rate</button>
+        <button class="btn btn-danger btn-sm" onclick="deletePieceRate('${key}')">Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateWeekOverride(key){
+  const safeKey=key.replace(/[^a-zA-Z0-9]/g,'_');
+  const val=parseFloat(document.getElementById('wo_'+safeKey).value)||null;
+  S.pieceRates[key].weekRate=val;save();renderPieceRateTable();
+  toast(val?'Week override set to '+fmtMoney(val):'Week override cleared','green');
+}
+function clearWeekOverride(key){S.pieceRates[key].weekRate=null;save();renderPieceRateTable();toast('Week override cleared','amber');}
+
+function openEditRate(key){
+  const pr=S.pieceRates[key];
+  const[crop,op]=key.split('||');
+  document.getElementById('pr-crop').innerHTML=S.crops.map(c=>`<option${c===crop?' selected':''}>${c}</option>`).join('');
+  document.getElementById('pr-op').innerHTML=S.operations.map(o=>`<option${o===op?' selected':''}>${o}</option>`).join('');
+  document.getElementById('pr-rate').value=pr.currentRate;
+  document.getElementById('pr-unit').value=pr.unit;
+  document.getElementById('pr-weekrate').value=pr.weekRate||'';
+  openModal('modal-addpr');
+}
+
+function deletePieceRate(key){delete S.pieceRates[key];save();renderPieceRateTable();}
+
+function saveSettings(){
+  S.dailyRate=parseFloat(document.getElementById('dailyRate').value)||4;
+  S.hoursPerDay=parseFloat(document.getElementById('hoursPerDay').value)||8;
+  save();toast('Settings saved','green');
+}
+
+function approveCropRequest(i){
+  const reqs=(S.cropRequests||[]).filter(r=>!r.done);
+  const req=reqs[i];if(!req)return;
+  if(!S.crops.includes(req.crop)){S.crops.push(req.crop);S.crops.sort((a,b)=>a.localeCompare(b));}
+  req.done=true;save();renderSettings();
+  toast('Crop added: '+req.crop,'green');
+}
+function dismissCropRequest(i){
+  const reqs=(S.cropRequests||[]).filter(r=>!r.done);
+  const req=reqs[i];if(req)req.done=true;
+  save();renderSettings();
+}
+
+function saveMgrName(username){
+  const el=document.getElementById('mgrname_'+username);
+  if(!el)return;
+  const name=el.value.trim();
+  if(!name){toast('Name cannot be empty','amber');return;}
+  S.users[username].name=name;save();renderSettings();
+  toast('Name updated','green');
+}
+
+function addCrop(){
+  const v=document.getElementById('newCropInput').value.trim();
+  if(v&&!S.crops.includes(v)){S.crops.push(v);S.crops.sort((a,b)=>a.localeCompare(b));save();renderSettings();document.getElementById('newCropInput').value='';}
+}
+function addOp(){
+  const v=document.getElementById('newOpInput').value.trim();
+  if(v&&!S.operations.includes(v)){S.operations.push(v);S.operations.sort((a,b)=>a.localeCompare(b));save();renderSettings();document.getElementById('newOpInput').value='';}
+}
+
+function saveFarm(){
+  const name=document.getElementById('af-name').value.trim();
+  if(!name){toast('Enter a farm name','amber');return;}
+  const sections=document.getElementById('af-sections').value.split(',').map(s=>s.trim()).filter(Boolean);
+  S.farms.push({id:'f'+Date.now(),name,region:document.getElementById('af-region').value.trim(),sections});
+  save();closeModal('modal-addfarm');renderSettings();
+  toast('Farm added: '+name,'green');
+}
+function deleteFarm(id){
+  if(S.farms.length===1){toast('Cannot remove the only farm','red');return;}
+  S.farms=S.farms.filter(f=>f.id!==id);save();renderSettings();
+}
+
+function saveSupervisor(){
+  const name=document.getElementById('as-name').value.trim();
+  const user=document.getElementById('as-user').value.trim().toLowerCase();
+  const pass=document.getElementById('as-pass').value;
+  const farm=document.getElementById('as-farm').value;
+  if(!name||!user||!pass){toast('Fill in all fields','amber');return;}
+  if(S.users[user]){toast('Username already exists','red');return;}
+  S.users[user]={name,role:'supervisor',farm,pass};
+  save();closeModal('modal-addsup');renderSettings();
+  toast('Supervisor added: '+name,'green');
+}
+
+function saveManager(){
+  const name=document.getElementById('am-name').value.trim();
+  const user=document.getElementById('am-user').value.trim().toLowerCase();
+  const pass=document.getElementById('am-pass').value;
+  const farm=document.getElementById('am-farm').value;
+  if(!name||!user||!pass){toast('Fill in all fields','amber');return;}
+  if(S.users[user]){toast('Username already exists','red');return;}
+  S.users[user]={name,role:'manager',farm,pass};
+  save();closeModal('modal-addmgr');renderSettings();
+  toast('Manager added: '+name,'green');
+}
+
+function deleteUser(username){
+  delete S.users[username];save();renderSettings();toast('User removed','amber');
+}
+
+function savePieceRate(){
+  const crop=document.getElementById('pr-crop').value;
+  const op=document.getElementById('pr-op').value;
+  const rate=parseFloat(document.getElementById('pr-rate').value);
+  const unit=document.getElementById('pr-unit').value;
+  const weekRate=parseFloat(document.getElementById('pr-weekrate').value)||null;
+  if(!crop||!op||!rate){toast('Crop, operation and rate are required','amber');return;}
+  const key=crop+'||'+op;
+  const existing=S.pieceRates[key];
+  if(existing&&Math.abs(existing.currentRate-rate)>0.0001){
+    // Archive old rate
+    existing.history=existing.history||[];
+    existing.history.push({rate:existing.currentRate,from:existing.rateFrom||'--',to:new Date().toISOString().split('T')[0]});
+    existing.currentRate=rate;existing.unit=unit;existing.weekRate=weekRate;existing.rateFrom=new Date().toISOString().split('T')[0];
+  }else if(existing){
+    existing.unit=unit;existing.weekRate=weekRate;
+  }else{
+    S.pieceRates[key]={currentRate:rate,unit,weekRate,history:[],rateFrom:new Date().toISOString().split('T')[0]};
+  }
+  save();closeModal('modal-addpr');renderSettings();
+  toast('Piece rate saved','green');
+}
+
+// ================================================================
+// MODAL / UTILITY HELPERS
+// ================================================================
+function openModal(id){
+  if(id==='modal-addsup'){document.getElementById('as-farm').innerHTML=S.farms.map(f=>`<option value="${f.id}">${f.name}</option>`).join('');}
+  if(id==='modal-addmgr'){document.getElementById('am-farm').innerHTML=S.farms.map(f=>`<option value="${f.id}">${f.name}</option>`).join('');}
+  if(id==='modal-addpr'){
+    document.getElementById('pr-crop').innerHTML=S.crops.map(c=>`<option>${c}</option>`).join('');
+    document.getElementById('pr-op').innerHTML=S.operations.map(o=>`<option>${o}</option>`).join('');
+    document.getElementById('pr-rate').value='';document.getElementById('pr-weekrate').value='';
+  }
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+function doSync(){
+  toast('Syncing...','amber');
+  setTimeout(()=>{S.logs.filter(l=>l.status==='approved').forEach(l=>l.synced=true);save();renderMyLog();toast('Sync complete','green');},1000);
+}
+
+// ================================================================
+// VOICE
+// ================================================================
+let recognition=null,voiceOn=false,micOk=false;
+async function startVoice(e){
+  if(e)e.preventDefault();
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){toast('Voice requires Chrome browser','red');return;}
+  if(!micOk){try{await navigator.mediaDevices.getUserMedia({audio:true});micOk=true;}catch(err){toast('Microphone permission denied','red');return;}}
+  if(voiceOn)return;
+  voiceOn=true;
+  document.getElementById('voiceBtn').classList.add('listening');
+  document.getElementById('voiceInstruction').textContent='Listening — release when done';
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();
+  recognition.lang='en-ZW';recognition.continuous=false;recognition.interimResults=true;recognition.maxAlternatives=6;
+  recognition.onresult=ev=>{
+    const alts=Array.from(ev.results[0]).map(r=>r.transcript.toLowerCase().trim());
+    document.getElementById('voiceFeedback').textContent='"'+alts[0]+'"';
+    if(ev.results[0].isFinal)processVoice(alts);
+  };
+  recognition.onerror=()=>stopVoice(null);
+  recognition.onend=()=>stopVoice(null);
+  try{recognition.start();}catch(e){voiceOn=false;}
+}
+function stopVoice(e){
+  if(e)e.preventDefault();
+  voiceOn=false;
+  document.getElementById('voiceBtn').classList.remove('listening');
+  document.getElementById('voiceInstruction').textContent='Hold to speak';
+  if(recognition){try{recognition.stop();}catch(x){}recognition=null;}
+}
+function processVoice(cands){
+  const n=wiz.step;
+  let vocab=[];
+  if(n===1)vocab=S.crops;
+  if(n===2)vocab=S.operations;
+  if(n===3){const f=getFarm(CU.farm);vocab=f?f.sections:[];}
+  if(n===4)vocab=['time','daily','hours','piece','piece rate','per kilo','per kg'];
+  if(n===5&&wiz.payType==='time'){parseTimeVoice(cands[0]);return;}
+  if(n===5&&wiz.payType==='piece'){parsePieceVoice(cands[0]);return;}
+  const match=fuzzyMatch(cands,vocab);
+  if(match){
+    document.getElementById('voiceFeedback').textContent='✓ '+match;
+    if(n===1){wiz.crop=match;setTimeout(wizardNext,350);}
+    if(n===2){wiz.op=match;setTimeout(wizardNext,350);}
+    if(n===3){wiz.section=match;setTimeout(wizardNext,350);}
+    if(n===4)selectPayType(/piece|kilo|kg/.test(match)?'piece':'time');
+    renderChips();
+  }else{toast('Could not match "'+cands[0]+'" — tap your answer','amber');}
+}
+function fuzzyMatch(cands,vocab){
+  for(const c of cands)for(const v of vocab)if(c===v.toLowerCase())return v;
+  for(const c of cands)for(const v of vocab){const vl=v.toLowerCase();if(c.includes(vl)||vl.includes(c)||phonetics(c,vl))return v;}
+  return null;
+}
+function phonetics(a,b){
+  const n=s=>s.replace(/\btree\b/g,'three').replace(/\bfife\b/g,'five').replace(/\bto\b/g,'two').replace(/th/g,'t').replace(/v([aeiou])/g,'b$1');
+  return n(a).includes(n(b))||n(b).includes(n(a));
+}
+function parseTimeVoice(text){
+  const nums=text.match(/\d+(\.\d+)?/g);
+  if(nums&&nums.length>=2){document.getElementById('workerCount').value=nums[0];document.getElementById('hoursWorked').value=nums[1];toast(nums[0]+' workers, '+nums[1]+' hours','green');}
+  else if(nums){document.getElementById('workerCount').value=nums[0];toast(nums[0]+' workers heard — add hours','amber');}
+}
+function parsePieceVoice(text){
+  const nums=text.match(/\d+(\.\d+)?/g);
+  if(nums&&nums.length>=2){document.getElementById('pieceWorkers').value=nums[0];document.getElementById('pieceOutput').value=nums[1];toast(nums[0]+' workers, '+nums[1]+' units','green');}
+}
+
+// ================================================================
+// GPS AREA RECORDER
+// ================================================================
+let gpsState = {
+  watching: false,
+  watchId: null,
+  currentTrack: [],      // array of {lat, lng, acc} for the patch being recorded
+  patches: [],           // array of completed patch objects {points:[], areaSqm}
+  lastPos: null
+};
+
+function openGpsRecorder(){
+  gpsState = {watching:false,watchId:null,currentTrack:[],patches:[],lastPos:null};
+  updateGpsUI();
+  document.getElementById('gps-overlay').classList.add('open');
+  startGpsWatch();
+}
+
+function closeGpsRecorder(){
+  stopGpsWatch();
+  document.getElementById('gps-overlay').classList.remove('open');
+}
+
+function startGpsWatch(){
+  if(!navigator.geolocation){
+    document.getElementById('gpsAccuracy').textContent='GPS not available on this device';
+    document.getElementById('gpsAccuracy').className='gps-accuracy poor';
+    return;
+  }
+  gpsState.watchId=navigator.geolocation.watchPosition(
+    pos=>{
+      gpsState.lastPos=pos;
+      const acc=Math.round(pos.coords.accuracy);
+      const el=document.getElementById('gpsAccuracy');
+      el.textContent='±'+acc+' m accuracy';
+      el.className='gps-accuracy'+(acc<=15?' good':acc<=40?' ':' poor');
+      if(gpsState.watching){
+        gpsState.currentTrack.push({lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy});
+        document.getElementById('gpsPointCount').textContent=gpsState.currentTrack.length+' point'+(gpsState.currentTrack.length!==1?'s':'');
+        drawGpsCanvas();
+      }
+    },
+    err=>{
+      const el=document.getElementById('gpsAccuracy');
+      el.textContent=err.code===1?'Location permission denied':'GPS signal lost';
+      el.className='gps-accuracy poor';
+    },
+    {enableHighAccuracy:true,maximumAge:2000,timeout:10000}
+  );
+}
+
+function stopGpsWatch(){
+  if(gpsState.watchId!==null){navigator.geolocation.clearWatch(gpsState.watchId);gpsState.watchId=null;}
+  gpsState.watching=false;
+}
+
+function toggleGpsRecording(){
+  if(!gpsState.watching){
+    // Start recording
+    if(!gpsState.lastPos){toast('Waiting for GPS signal — try moving to open sky','amber');return;}
+    gpsState.watching=true;
+    gpsState.currentTrack=[];
+    document.getElementById('gpsBtnRecord').classList.add('recording');
+    document.getElementById('gpsBtnIcon').textContent='&#9632;';
+    document.getElementById('gpsBtnLabel').textContent='Stop';
+    document.getElementById('gpsInstruction').textContent='Recording — walk the boundary of this patch. Tap Stop when done.';
+    document.getElementById('gpsPointCount').textContent='0 points';
+    document.getElementById('gpsMapEmpty').style.display='none';
+  }else{
+    // Stop recording
+    gpsState.watching=false;
+    document.getElementById('gpsBtnRecord').classList.remove('recording');
+    document.getElementById('gpsBtnIcon').innerHTML='&#9679;';
+    document.getElementById('gpsBtnLabel').textContent='Start';
+    if(gpsState.currentTrack.length<3){
+      toast('Need at least 3 GPS points — try walking further around the boundary','amber');
+      gpsState.currentTrack=[];
+      document.getElementById('gpsInstruction').textContent='Walk the boundary of the area worked, then tap Stop. You can record multiple separate patches.';
+      return;
+    }
+    const areaSqm=calcPolygonArea(gpsState.currentTrack);
+    gpsState.patches.push({points:[...gpsState.currentTrack],areaSqm});
+    gpsState.currentTrack=[];
+    updateGpsUI();
+  }
+}
+
+// Shoelace formula on WGS84 coordinates converted to metres
+function calcPolygonArea(pts){
+  if(pts.length<3)return 0;
+  // Convert lat/lng to approximate metres using equirectangular projection
+  const refLat=pts[0].lat*Math.PI/180;
+  const R=6371000; // earth radius metres
+  const coords=pts.map(p=>({
+    x:R*(p.lng-pts[0].lng)*Math.PI/180*Math.cos(refLat),
+    y:R*(p.lat-pts[0].lat)*Math.PI/180
+  }));
+  let area=0;
+  for(let i=0,j=coords.length-1;i<coords.length;j=i++){
+    area+=(coords[j].x+coords[i].x)*(coords[j].y-coords[i].y);
+  }
+  return Math.abs(area/2);
+}
+
+function sqmToHa(sqm){return sqm/10000;}
+
+function gpsAddPatch(){
+  // Reset to allow recording another patch
+  document.getElementById('gpsInstruction').textContent='Walk the boundary of the next patch, then tap Stop.';
+  document.getElementById('gpsBtnRecord').textContent='';
+  document.getElementById('gpsBtnIcon').innerHTML='&#9679;';
+  document.getElementById('gpsBtnLabel').textContent='Start';
+  document.getElementById('gpsPointCount').textContent='0 points';
+  updateGpsUI();
+}
+
+function gpsApplyArea(){
+  const totalHa=gpsState.patches.reduce((a,p)=>a+sqmToHa(p.areaSqm),0);
+  const rounded=Math.round(totalHa*10000)/10000;
+  document.getElementById('areaCovered').value=rounded.toFixed(4);
+  wiz.gpsMeasured=true;
+  const note=document.getElementById('gpsAreaNote');
+  const patchCount=gpsState.patches.length;
+  note.textContent='&#128205; GPS measured: '+rounded.toFixed(4)+' ha'+(patchCount>1?' ('+patchCount+' patches)':'');
+  note.style.display='block';
+  closeGpsRecorder();
+  toast('Area recorded — '+rounded.toFixed(4)+' ha','green');
+}
+
+function updateGpsUI(){
+  const hasList=document.getElementById('gpsPatchList');
+  const totalBar=document.getElementById('gpsTotalBar');
+  const actionRow=document.getElementById('gpsActionRow');
+  const mapEmpty=document.getElementById('gpsMapEmpty');
+  if(gpsState.patches.length>0){
+    hasList.style.display='flex';
+    totalBar.style.display='flex';
+    actionRow.style.display='flex';
+    mapEmpty.style.display='none';
+    const totalHa=gpsState.patches.reduce((a,p)=>a+sqmToHa(p.areaSqm),0);
+    document.getElementById('gpsTotalVal').textContent=totalHa.toFixed(4)+' ha';
+    // Build patch list rows (keep existing header, rebuild rows)
+    const header=hasList.querySelector('div');
+    hasList.innerHTML='';
+    hasList.appendChild(header);
+    gpsState.patches.forEach((p,i)=>{
+      const row=document.createElement('div');
+      row.className='gps-patch-row';
+      row.innerHTML=`<span class="gps-patch-label">Patch ${i+1} <span style="font-size:11px;font-weight:400;color:var(--ink3);">(${p.points.length} points)</span></span>
+        <span style="display:flex;align-items:center;gap:8px;">
+          <span class="gps-patch-area">${sqmToHa(p.areaSqm).toFixed(4)} ha</span>
+          <button class="btn btn-danger btn-sm" onclick="gpsDeletePatch(${i})">&#x2715;</button>
+        </span>`;
+      hasList.appendChild(row);
+    });
+    drawGpsCanvas();
+  }else{
+    hasList.style.display='none';
+    totalBar.style.display='none';
+    actionRow.style.display='none!important';
+    mapEmpty.style.display='';
+    const canvas=document.getElementById('gpsCanvas');
+    const ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+}
+
+function gpsDeletePatch(i){
+  gpsState.patches.splice(i,1);
+  updateGpsUI();
+}
+
+// Draw all completed patches + current track on canvas
+function drawGpsCanvas(){
+  const box=document.getElementById('gpsMapBox');
+  const canvas=document.getElementById('gpsCanvas');
+  canvas.width=box.clientWidth||320;
+  canvas.height=box.clientHeight||220;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // Collect all points to determine bounds
+  const allPts=[...gpsState.currentTrack];
+  gpsState.patches.forEach(p=>allPts.push(...p.points));
+  if(allPts.length<2)return;
+  const lats=allPts.map(p=>p.lat);
+  const lngs=allPts.map(p=>p.lng);
+  const minLat=Math.min(...lats),maxLat=Math.max(...lats);
+  const minLng=Math.min(...lngs),maxLng=Math.max(...lngs);
+  const pad=32;
+  const scaleX=(canvas.width-pad*2)/Math.max(maxLng-minLng,0.00001);
+  const scaleY=(canvas.height-pad*2)/Math.max(maxLat-minLat,0.00001);
+  const scale=Math.min(scaleX,scaleY);
+  const toX=lng=>pad+(lng-minLng)*scale+(canvas.width-pad*2-(maxLng-minLng)*scale)/2;
+  const toY=lat=>canvas.height-pad-(lat-minLat)*scale-(canvas.height-pad*2-(maxLat-minLat)*scale)/2;
+  // Draw completed patches
+  const patchColours=['#1f6e2e','#2060a8','#b85c00','#5a1f8a','#1a7070'];
+  gpsState.patches.forEach((p,pi)=>{
+    if(p.points.length<2)return;
+    ctx.beginPath();
+    p.points.forEach((pt,i)=>{i===0?ctx.moveTo(toX(pt.lng),toY(pt.lat)):ctx.lineTo(toX(pt.lng),toY(pt.lat));});
+    ctx.closePath();
+    ctx.fillStyle=patchColours[pi%patchColours.length]+'33';
+    ctx.fill();
+    ctx.strokeStyle=patchColours[pi%patchColours.length];
+    ctx.lineWidth=2;
+    ctx.stroke();
+    // Patch label
+    const cx=p.points.reduce((a,pt)=>a+toX(pt.lng),0)/p.points.length;
+    const cy=p.points.reduce((a,pt)=>a+toY(pt.lat),0)/p.points.length;
+    ctx.fillStyle=patchColours[pi%patchColours.length];
+    ctx.font='bold 12px Barlow Condensed, sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('P'+(pi+1),cx,cy+4);
+  });
+  // Draw current live track
+  if(gpsState.currentTrack.length>=2){
+    ctx.beginPath();
+    gpsState.currentTrack.forEach((pt,i)=>{i===0?ctx.moveTo(toX(pt.lng),toY(pt.lat)):ctx.lineTo(toX(pt.lng),toY(pt.lat));});
+    ctx.strokeStyle='#d42020';
+    ctx.lineWidth=2.5;
+    ctx.setLineDash([5,4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Current position dot
+    const last=gpsState.currentTrack[gpsState.currentTrack.length-1];
+    ctx.beginPath();
+    ctx.arc(toX(last.lng),toY(last.lat),6,0,Math.PI*2);
+    ctx.fillStyle='#d42020';
+    ctx.fill();
+  }
+}
+
+// ================================================================
+// FORMAT HELPERS
+// ================================================================
+function fmtMoney(n){
+  if(n===null||n===undefined||isNaN(n))return '--';
+  const v=parseFloat(n);
+  // Use 3dp for piece rates under $1, 2dp otherwise
+  const dp=(Math.abs(v)<1&&v!==0)?3:2;
+  return v.toLocaleString('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp})+' US$';
+}
+function fmtDate(d){
+  if(!d)return'';
+  try{return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});}
+  catch(e){return d;}
+}
+function toast(msg,type=''){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='toast '+type+' show';
+  clearTimeout(el._t);el._t=setTimeout(()=>el.className='toast '+type,2800);
+}
+
+// ================================================================
+// DEMO DATA
+// ================================================================
+function seedDemo(){
+  const today=new Date().toISOString().split('T')[0];
+  const yday=new Date(Date.now()-86400000).toISOString().split('T')[0];
+  const d2=new Date(Date.now()-172800000).toISOString().split('T')[0];
+  S.logs=[
+    mk('Moses Chikwanda','moses.c','f1',today,'Rosella','Weeding','B2','time',12,6,3,'ha',0,'',true),
+    mk('Moses Chikwanda','moses.c','f1',today,'Chilli','Harvesting','North Block','piece',8,0,0,'',280,'wet kg',true),
+    mk('Tendai Moyo','tendai.m','f1',today,'Peppermint','Irrigation','A1','time',3,4,0,'',0,'',true),
+    mk('Moses Chikwanda','moses.c','f1',yday,'Moringa','Pruning / Thinning','A2','time',6,7,1.5,'ha',0,'',true),
+    mk('Tendai Moyo','tendai.m','f1',yday,'Rosella','Fertilising','B1','time',4,5,0,'',0,'',true,'Applied Talborne 5:1:5'),
+    mk('Moses Chikwanda','moses.c','f1',d2,'Chilli','Weeding','North Block','time',10,8,2,'ha',0,'',true),
+    mk('Tendai Moyo','tendai.m','f1',d2,'Peppermint','Harvesting','A1','piece',6,0,0,'',180,'wet kg',true),
+  ];
+  const pending=mk('Moses Chikwanda','moses.c','f1',today,'Gotu Kola','Land Preparation','South Block','time',5,6,2,'ha',0,'',false);
+  S.logs.unshift(pending);
+  save();
+}
+
+function mk(sup,supUser,farm,date,crop,op,section,payType,workers,hours,area,areaUnit,pieceOutput,pieceUnit,approved,notes=''){
+  let cost,rateUsed=null;
+  if(payType==='time'){cost=workers*hours*(S.dailyRate/S.hoursPerDay);}
+  else{const pr=S.pieceRates[crop+'||'+op];if(pr){const r=pr.weekRate||pr.currentRate;cost=pieceOutput*r;rateUsed={rate:r,type:pr.weekRate?'week-override':'standard'};}else cost=0;}
+  const f=S.farms.find(f=>f.id===farm);
+  return{id:'l'+Math.random().toString(36).slice(2),farm,farmName:f?f.name:'',supervisor:sup,supervisorUser:supUser,
+    date,backdated:false,crop,op,section,payType,workers,hours,area,areaUnit,pieceOutput,pieceUnit,rateUsed,cost,notes,
+    status:approved?'approved':'pending',synced:approved,approvedBy:approved?'Tim Ashton':null,loggedAt:new Date().toISOString()};
+}
+</script>
+</body>
+</html>
